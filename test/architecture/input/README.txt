@@ -1,0 +1,1 @@
+In this folder, you find an example stacked .mha image and its json spacing file. If you want to test your model, you can use these images. Note that the current .mha file is a reference to the real one, because the image is too large to put on GitHub. 
