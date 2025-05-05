@@ -9,6 +9,7 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 # load the environment variables from the `.env` file
 source ../.env 2> /dev/null || source .env
 
+
 # We want to create the virtual environment in the scratch directory as /scratch/
 # is a local disk (unique for each node) and therefore more performant.
 #
@@ -39,5 +40,4 @@ python3 -m pip install --user virtualenv
 # install the dependencies
 source "$VENV_DIR"/bin/activate
 python3 -m pip install --upgrade pip
-# python3 -m pip install -r "$PROJECT_DIR"/requirements.txt
-# python3 -m pip install -e "$PROJECT_DIR"
+python3 -m pip install -r "$PROJECT_DIR"/requirements.txt
