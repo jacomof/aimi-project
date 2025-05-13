@@ -3,6 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Dont save lighnting logs
+version_*
+
+# Do not save figures
+*.png
+
 # C extensions
 *.so
 
