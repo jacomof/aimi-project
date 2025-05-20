@@ -176,3 +176,6 @@ cython_debug/
 data
 logs
 venv
+SegFormer3D-main.zip
+
+model_checkpoints/
