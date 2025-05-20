@@ -5,7 +5,5 @@ numpy==1.24.4
 scikit-image==0.19.3
 scipy==1.10.1
 click==8.1.5
-batchgenerators==0.23
-blosc2==2.5.1
-acvl_utils==0.2
 torch==2.5.1
+-e /vol/csedu-nobackup/course/IMC037_aimi/group08/aimi-project/src/nnUNet
