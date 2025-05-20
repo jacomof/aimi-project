@@ -179,9 +179,13 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-data
 logs
 venv
 SegFormer3D-main.zip
 
 model_checkpoints/
+
+SegFormer3D-main/data/uls2023_seg/uls2023_raw_data/Dataset001_MIX
+SegFormer3D-main/data/uls2023_seg/uls2023_raw_data/test
+SegFormer3D-main/data/uls2023_seg/uls2023_raw_data/train
+SegFormer3D-main/data/uls2023_seg/ULS2023_Training_Data
