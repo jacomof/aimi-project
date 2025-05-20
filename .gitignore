@@ -3,6 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Dont save lighnting logs
+version_*
+
+# Do not save figures
+*.png
+
 # C extensions
 *.so
 
@@ -177,3 +183,6 @@ data
 logs
 venv
 aimi-project-storage
+SegFormer3D-main.zip
+
+model_checkpoints/
