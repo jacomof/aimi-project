@@ -55,6 +55,8 @@ evalutils==0.4.2
 nibabel==5.1.0
 scikit-image==0.19.3
 click==8.1.5
+torch==2.5.1
+-e /vol/csedu-nobackup/course/IMC037_aimi/group08/aimi-project/src/nnUNet
 batchgenerators==0.23
 blosc2==2.5.1
 acvl_utils==0.2

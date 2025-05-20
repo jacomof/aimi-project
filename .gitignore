@@ -181,6 +181,7 @@ cython_debug/
 
 logs
 venv
+aimi-project-storage
 SegFormer3D-main.zip
 
 model_checkpoints/
