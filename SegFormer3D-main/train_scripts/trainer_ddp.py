@@ -177,6 +177,7 @@ class Segmentation_Trainer:
         # Initialize the training loss for the current Epoch
         epoch_avg_loss = 0.0
         total_dice = 0.0
+        total_uls_metric = 0.0
 
         # set model to train mode
         self.model.eval()
@@ -203,9 +204,10 @@ class Segmentation_Trainer:
 
                 # calculate metrics
                 if self.calculate_metrics:
-                    mean_dice = self._calc_dice_metric(data, labels, use_ema)
+                    mean_dice, mean_uls_metric = self._calc_dice_metric(data, labels, use_ema)
                     # keep track of number of total correct
                     total_dice += mean_dice
+                    total_uls_metric += mean_uls_metric
 
                 # update loss for the current batch
                 epoch_avg_loss += loss.item()
@@ -214,6 +216,7 @@ class Segmentation_Trainer:
             self.epoch_val_ema_dice = total_dice / float(index + 1)
         else:
             self.epoch_val_dice = total_dice / float(index + 1)
+            self.epoch_val_uls_metric = total_uls_metric / float(index + 1)
 
         epoch_avg_loss = epoch_avg_loss / float(index + 1)
 
@@ -236,12 +239,12 @@ class Segmentation_Trainer:
                 self.ema_model,
             )
         else:
-            avg_dice_score = self.sliding_window_inference(
+            avg_dice_score, uls_metric = self.sliding_window_inference(
                 data,
                 labels,
                 self.model,
             )
-        return avg_dice_score
+        return avg_dice_score, uls_metric
 
     def _run_train_val(self) -> None:
         """_summary_"""

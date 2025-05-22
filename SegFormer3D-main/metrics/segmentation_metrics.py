@@ -7,15 +7,7 @@ from monai.data import decollate_batch
 from monai.transforms import Activations
 from monai.transforms import AsDiscrete
 from monai.inferers import sliding_window_inference
-import sys
-sys.path.append("../..")
-from src.utils.loss_fn import (
-    DC_and_BCE_loss,
-    DC_and_CE_loss,
-    MemoryEfficientSoftDiceLoss,
-)
-
-from src.utils.competition_metric import ULS23_evaluator
+from competition_metric import ULS23_evaluator
 
 
 ################################################################################
@@ -60,9 +52,9 @@ class SlidingWindowInference:
         self.dice_metric(y_pred=val_output_convert, y=val_labels_list)
         # compute accuracy per channel
         acc = self.dice_metric.aggregate().cpu().numpy()
-        avg_acc = acc.mean() # Should be a list with only 1 value
+        dice_metric = acc.mean() # Should be a list with only 1 value
 
-        score = self.evaluator.ULS_score_metric(y_pred, y_true)
+        uls_metric = self.evaluator.ULS_score_metric(y_pred, y_true)
         # To access individual metric 
         #background_dice = acc[0]
         #lesion_dice = acc[1]
@@ -72,7 +64,7 @@ class SlidingWindowInference:
 
 
 
-        return score
+        return dice_metric, uls_metric
 
 
 def build_metric_fn(metric_type: str, metric_arg: Dict = None):

@@ -60,3 +60,4 @@ torch==2.5.1
 batchgenerators==0.23
 blosc2==2.5.1
 acvl_utils==0.2
+jupyterlab==4.4.2
