@@ -13,7 +13,7 @@ from monai.inferers import sliding_window_inference
 class SlidingWindowInference:
     def __init__(self, roi: tuple, sw_batch_size: int):
         self.dice_metric = DiceMetric(
-            include_background=True, reduction="mean_batch", get_not_nans=False
+            include_background=False, reduction="mean_batch", get_not_nans=False
         )
         self.post_transform = Compose(
             [
@@ -40,15 +40,17 @@ class SlidingWindowInference:
         val_output_convert = [
             self.post_transform(val_pred_tensor) for val_pred_tensor in val_outputs_list
         ]
+
         self.dice_metric(y_pred=val_output_convert, y=val_labels_list)
         # compute accuracy per channel
         acc = self.dice_metric.aggregate().cpu().numpy()
-        avg_acc = acc.mean()
+        avg_acc = acc.mean() # Should be a list with only 1 value
         # To access individual metric 
-        # TC acc: acc[0]
-        # WT acc: acc[1]
+        #background_dice = acc[0]
+        #lesion_dice = acc[1]
         # ET acc: acc[2]
-        return avg_acc * 100
+        print(f"acc: {acc}")
+        return avg_acc
 
 
 def build_metric_fn(metric_type: str, metric_arg: Dict = None):

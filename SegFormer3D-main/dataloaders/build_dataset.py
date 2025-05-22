@@ -38,6 +38,7 @@ def build_dataset(dataset_type: str, dataset_args: Dict):
             transform=build_augmentations(dataset_args["train"]),
             fold_id=dataset_args["fold_id"],
         )
+        print("Loaded ULS2023 dataset")
         return dataset
     else:
         raise ValueError(

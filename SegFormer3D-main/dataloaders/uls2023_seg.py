@@ -37,6 +37,8 @@ class ULS2023Dataset(Dataset):
 
         self.csv = pd.read_csv(csv_fp)
         self.transform = transform
+        print("Initializing dataset with csv file: ", csv_fp)
+        print("Number of samples: ", len(self.csv))
 
     def __len__(self):
         return self.csv.__len__()
@@ -51,6 +53,7 @@ class ULS2023Dataset(Dataset):
         # load the preprocessed tensors
         volume = torch.load(volume_fp)
         label = torch.load(label_fp)
+
         data = {"image": torch.from_numpy(volume).float(), "label": torch.from_numpy(label).float()}
 
         if self.transform:

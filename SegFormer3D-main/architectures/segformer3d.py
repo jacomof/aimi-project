@@ -149,9 +149,8 @@ class PatchEmbedding(nn.Module):
 
     def forward(self, x):
         # standard embedding patch
-        print("Input shape: ", x.shape)
+
         patches = self.patch_embeddings(x)
-        print("Patches before flattening and after convolution shape: ", patches.shape)
         patches = patches.flatten(2).transpose(1, 2)
         patches = self.norm(patches)
         return patches
@@ -416,7 +415,6 @@ class MixVisionTransformer(nn.Module):
 
         # stage 1
         x = self.embed_1(x)
-        print(x.shape)
         B, N, C = x.shape
         n = cube_root(N)
         for i, blk in enumerate(self.tf_block1):

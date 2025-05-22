@@ -57,7 +57,7 @@ class ConvertToMultiChannelBasedOnUls2023Classes(object):
             img = img.squeeze(-1)
 
         # We have two classes: 0 (background) and 1 (lesion)
-        result = [img == 0, img == 1]
+        result = [img == 1]
         # merge background and lesion
         return torch.stack(result, dim=0) if isinstance(img, torch.Tensor) else np.stack(result, axis=0)
 

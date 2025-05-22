@@ -27,7 +27,7 @@ class BinaryCrossEntropyWithLogits(nn.Module):
 class DiceLoss(nn.Module):
     def __init__(self):
         super().__init__()
-        self._loss = losses.DiceLoss(to_onehot_y=False, sigmoid=True)
+        self._loss = losses.DiceLoss(include_background=False, to_onehot_y=False, sigmoid=True)
 
     def forward(self, predicted, target):
         loss = self._loss(predicted, target)
@@ -38,7 +38,7 @@ class DiceLoss(nn.Module):
 class DiceCELoss(nn.Module):
     def __init__(self):
         super().__init__()
-        self._loss = losses.DiceCELoss(to_onehot_y=False, sigmoid=True)
+        self._loss = losses.DiceCELoss(include_background=False, to_onehot_y=False, sigmoid=True)
 
     def forward(self, predicted, target):
         loss = self._loss(predicted, target)
