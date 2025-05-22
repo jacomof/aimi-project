@@ -7,6 +7,15 @@ from monai.data import decollate_batch
 from monai.transforms import Activations
 from monai.transforms import AsDiscrete
 from monai.inferers import sliding_window_inference
+import sys
+sys.path.append("../..")
+from src.utils.loss_fn import (
+    DC_and_BCE_loss,
+    DC_and_CE_loss,
+    MemoryEfficientSoftDiceLoss,
+)
+
+from src.utils.competition_metric import ULS23_evaluator
 
 
 ################################################################################
@@ -23,6 +32,7 @@ class SlidingWindowInference:
         )
         self.sw_batch_size = sw_batch_size
         self.roi = roi
+        self.evaluator = ULS23_evaluator()
 
     def __call__(
         self, val_inputs: torch.Tensor, val_labels: torch.Tensor, model: nn.Module
@@ -35,6 +45,12 @@ class SlidingWindowInference:
             predictor=model,
             overlap=0.5,
         )
+        # Bx2xHxWxD
+        preds = torch.sigmoid(logits[:, 0:1, ...])
+        y_pred = preds > 0.5
+
+        y_true = val_labels[:, 0:1, ...]
+
         val_labels_list = decollate_batch(val_labels)
         val_outputs_list = decollate_batch(logits)
         val_output_convert = [
@@ -45,12 +61,18 @@ class SlidingWindowInference:
         # compute accuracy per channel
         acc = self.dice_metric.aggregate().cpu().numpy()
         avg_acc = acc.mean() # Should be a list with only 1 value
+
+        score = self.evaluator.ULS_score_metric(y_pred, y_true)
         # To access individual metric 
         #background_dice = acc[0]
         #lesion_dice = acc[1]
         # ET acc: acc[2]
         print(f"acc: {acc}")
-        return avg_acc
+
+
+
+
+        return score
 
 
 def build_metric_fn(metric_type: str, metric_arg: Dict = None):
