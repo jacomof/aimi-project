@@ -7,7 +7,7 @@ from monai.data import decollate_batch
 from monai.transforms import Activations
 from monai.transforms import AsDiscrete
 from monai.inferers import sliding_window_inference
-from competition_metric import ULS23_evaluator
+from metrics.competition_metric import ULS23_evaluator
 
 
 ################################################################################
@@ -37,11 +37,6 @@ class SlidingWindowInference:
             predictor=model,
             overlap=0.5,
         )
-        # Bx2xHxWxD
-        preds = torch.sigmoid(logits[:, 0:1, ...])
-        y_pred = preds > 0.5
-
-        y_true = val_labels[:, 0:1, ...]
 
         val_labels_list = decollate_batch(val_labels)
         val_outputs_list = decollate_batch(logits)
@@ -54,7 +49,12 @@ class SlidingWindowInference:
         acc = self.dice_metric.aggregate().cpu().numpy()
         dice_metric = acc.mean() # Should be a list with only 1 value
 
+        # Bx2xHxWxD
+        preds = torch.sigmoid(logits[:, 1:, ...])
+        y_pred = preds > 0.5
+        y_true = val_labels[:, 1:, ...]
         uls_metric = self.evaluator.ULS_score_metric(y_pred, y_true)
+        
         # To access individual metric 
         #background_dice = acc[0]
         #lesion_dice = acc[1]

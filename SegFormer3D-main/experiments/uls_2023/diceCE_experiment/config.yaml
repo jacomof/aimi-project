@@ -4,7 +4,7 @@ wandb_parameters:
   mode: "online" # set this to "online" if you want to log to wandb
   entity: gatonegro
   group: first_experiment
-  name: segformer3d_adamw_batch_diceloss_continue_training
+  name: segformer3d_adamw_batch8_diceCEloss_continued
   resume: False
   tags: ["aimilab", "dice", "b0_model", "adamw"]
   dir: "/home/jfigueira/aimi-project/data/wandb_logs"
@@ -30,7 +30,7 @@ model_parameters:
 
 # loss function
 loss_fn:
-  loss_type: "dice"
+  loss_type: "diceCE"
   loss_args: None
 
 # optimizer
@@ -76,11 +76,11 @@ training_parameters:
   print_every: 200
   calculate_metrics: True
   grad_accumulate_steps: 1 # default: 1
-  checkpoint_save_dir: "../../../data/uls2023_seg/model_checkpoints/best_dice_checkpoint_continued"
+  checkpoint_save_dir: "../../../data/uls2023_seg/model_checkpoints/best_diceCE_checkpoint"
   load_checkpoint: # not implemented yet
     load_full_checkpoint: True
     load_model_only: False
-    load_checkpoint_path: "../../../data/uls2023_seg/model_checkpoints/best_dice_checkpoint"
+    load_checkpoint_path: "../../../data/uls2023_seg/model_checkpoints/best_diceCE_checkpoint"
 
 # dataset args
 dataset_parameters:

@@ -179,8 +179,7 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-logs
-venv
+#logs
 aimi-project-storage
 SegFormer3D-main.zip
 

@@ -3,7 +3,7 @@ import monai
 import torch.nn as nn
 from typing import Dict
 from monai import losses
-from loss_fn import DC_and_BCE_loss
+from losses.loss_fn import DC_and_BCE_loss
 
 class CrossEntropyLoss(nn.Module):
     def __init__(self):
@@ -64,10 +64,9 @@ def build_loss_fn(loss_type: str, loss_args: Dict = None):
 
     elif loss_type == "dice":
         return DiceLoss()
-
     elif loss_type == "diceCE":
         return DiceCELoss()
-    elif loss_type == "DC_and_BCE_loss":
+    elif loss_type == "diceBCE":
         return DC_and_BCE_loss()
         
     else:

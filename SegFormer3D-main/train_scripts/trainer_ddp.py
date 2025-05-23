@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 import monai
 from metrics.segmentation_metrics import SlidingWindowInference
 import kornia
+import sys
 
 
 #################################################################################################
@@ -63,6 +64,7 @@ class Segmentation_Trainer:
         self.best_val_loss = 100.0  # best validation loss
         self.epoch_val_dice = 0.0  # epoch validation accuracy
         self.best_val_dice = 0.0  # best validation accuracy
+        self.best_val_uls_metric = 0.0  # best validation accuracy
 
         # external metric functions we can add
         self.sliding_window_inference = SlidingWindowInference(
@@ -80,6 +82,7 @@ class Segmentation_Trainer:
         self.ema_model = self._create_ema_model() if self.ema_enabled else None
         self.epoch_val_ema_dice = 0.0
         self.best_val_ema_dice = 0.0
+        self.accelerator.print("[info] -- Trainer initialized!")
 
     def _configure_trainer(self) -> None:
         """
@@ -120,7 +123,9 @@ class Segmentation_Trainer:
 
         # set epoch to shift data order each epoch
         # self.train_dataloader.sampler.set_epoch(self.current_epoch)
+
         for index, raw_data in enumerate(self.train_dataloader):
+            
             # add in gradient accumulation
             # TODO: test gradient accumulation
             with self.accelerator.accumulate(self.model):
@@ -253,9 +258,9 @@ class Segmentation_Trainer:
             self.wandb_tracker.run.watch(
                 self.model, self.criterion, log="all", log_freq=10, log_graph=True
             )
-
+        print("[info] -- Starting training and validation")
         # Run Training and Validation
-        for epoch in tqdm(range(self.num_epochs)):
+        for epoch in tqdm(range(self.current_epoch, self.num_epochs)):
             # update epoch
             self.current_epoch = epoch
             self._update_scheduler()
@@ -321,6 +326,8 @@ class Segmentation_Trainer:
         if self.calculate_metrics:
             if self.epoch_val_dice >= self.best_val_dice:
                 self.best_val_dice = self.epoch_val_dice
+            if self.epoch_val_uls_metric >= self.best_val_uls_metric:
+                self.best_val_uls_metric = self.epoch_val_uls_metric
 
     def _log_metrics(self) -> None:
         """_summary_"""
@@ -330,6 +337,7 @@ class Segmentation_Trainer:
             "train_loss": self.epoch_train_loss,
             "val_loss": self.epoch_val_loss,
             "mean_dice": self.epoch_val_dice,
+            "mean_uls_metric": self.epoch_val_uls_metric,
         }
         # log the data
         self.accelerator.log(log_data)
@@ -337,7 +345,7 @@ class Segmentation_Trainer:
     def _save_and_print(self) -> None:
         """_summary_"""
         # print only on the first gpu
-        if self.epoch_val_dice >= self.best_val_dice:
+        if self.epoch_val_uls_metric >= self.best_val_uls_metric:
             # change path name based on cutoff epoch
             if self.current_epoch <= self.cutoff_epoch:
                 save_path = self.checkpoint_save_dir
@@ -355,6 +363,7 @@ class Segmentation_Trainer:
                 f"train loss -- {colored(f'{self.epoch_train_loss:.5f}', color='green')} || "
                 f"val loss -- {colored(f'{self.epoch_val_loss:.5f}', color='green')} || "
                 f"lr -- {colored(f'{self.scheduler.get_last_lr()[0]:.8f}', color='green')} || "
+                f"val mean_uls_metric -- {colored(f'{self.best_val_uls_metric:.5f}', color='green')} -- saved"
                 f"val mean_dice -- {colored(f'{self.best_val_dice:.5f}', color='green')} -- saved"
             )
         else:
@@ -386,6 +395,21 @@ class Segmentation_Trainer:
 
         # standard model checkpoint
         self.accelerator.save_state(filename, safe_serialization=False)
+        trainer_state_dict = {
+            "current_epoch": self.current_epoch,
+            "best_val_ema_dice": self.best_val_ema_dice,
+            "best_val_loss": self.best_val_loss,
+            "best_val_dice": self.best_val_dice,
+            "best_val_uls_metric": self.best_val_uls_metric,
+            "best_train_loss": self.best_train_loss,
+        }
+
+        # save the model state dict
+        trainer_state_dict_path = os.path.join(filename, "trainer_state_dict.pkl")
+        torch.save(trainer_state_dict, trainer_state_dict_path)
+
+
+
 
     def _val_ema_model(self):
         if self.ema_enabled and (self.current_epoch % self.val_ema_every == 0):
@@ -442,6 +466,7 @@ class Segmentation_Trainer:
         """
         Runs a full training and validation of the dataset.
         """
+        self.accelerator.print(colored("[info] -- starting training", color="red"))
         self._run_train_val()
         self.accelerator.end_training()
 
@@ -839,6 +864,7 @@ class AutoEncoder_Trainer:
         """
         Runs a full training and validation of the dataset.
         """
+        self.accelerator.print("[info] -- Starting training!!")
         self._run_train_val()
         self.accelerator.end_training()
 
