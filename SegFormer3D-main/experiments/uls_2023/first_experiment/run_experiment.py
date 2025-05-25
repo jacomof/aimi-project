@@ -17,7 +17,8 @@ from optimizers.schedulers import build_scheduler
 from train_scripts.trainer_ddp import Segmentation_Trainer
 from architectures.build_architecture import build_architecture
 from dataloaders.build_dataset import build_dataset, build_dataloader
-
+import warnings
+warnings.filterwarnings("ignore")
 
 ##################################################################################################
 def launch_experiment(config_path) -> Dict:

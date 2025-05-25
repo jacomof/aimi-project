@@ -77,10 +77,11 @@ training_parameters:
   calculate_metrics: True
   grad_accumulate_steps: 1 # default: 1
   checkpoint_save_dir: "../../../data/uls2023_seg/model_checkpoints/best_dice_checkpoint_continued"
+  checkpoint_save_frequency: 3 
   load_checkpoint: # not implemented yet
     load_full_checkpoint: True
     load_model_only: False
-    load_checkpoint_path: "../../../data/uls2023_seg/model_checkpoints/best_dice_checkpoint"
+    load_checkpoint_path: "../../../data/uls2023_seg/model_checkpoints/best_dice_checkpoint_continued/last_epoch_model"
 
 # dataset args
 dataset_parameters:

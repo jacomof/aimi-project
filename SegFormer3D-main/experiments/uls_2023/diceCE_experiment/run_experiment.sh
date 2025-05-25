@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#SBATCH --partition=csedu
+#SBATCH --partition=csedu-prio,csedu
 #SBATCH --account=cseduimc037
 #SBATCH --qos=csedu-preempt
 #SBATCH --mem=15G

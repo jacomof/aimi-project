@@ -83,6 +83,8 @@ class Segmentation_Trainer:
         self.epoch_val_ema_dice = 0.0
         self.best_val_ema_dice = 0.0
         self.accelerator.print("[info] -- Trainer initialized!")
+        
+        # model saving parameters
 
     def _configure_trainer(self) -> None:
         """
@@ -99,6 +101,7 @@ class Segmentation_Trainer:
         self.checkpoint_save_dir = self.config["training_parameters"][
             "checkpoint_save_dir"
         ]
+        self.checkpoint_save_frequency = self.config["training_parameters"]["checkpoint_save_frequency"]
 
     def _load_checkpoint(self):
         raise NotImplementedError
@@ -346,6 +349,8 @@ class Segmentation_Trainer:
         """_summary_"""
         # print only on the first gpu
         if self.epoch_val_uls_metric >= self.best_val_uls_metric:
+            self.accelerator.print(
+                f"[info] -- best model updated at epoch {self.current_epoch}")
             # change path name based on cutoff epoch
             if self.current_epoch <= self.cutoff_epoch:
                 save_path = self.checkpoint_save_dir
@@ -367,6 +372,8 @@ class Segmentation_Trainer:
                 f"val mean_dice -- {colored(f'{self.best_val_dice:.5f}', color='green')} -- saved"
             )
         else:
+            self.accelerator.print(f"[info] -- best model not updated at epoch {self.current_epoch}")
+
             self.accelerator.print(
                 f"epoch -- {str(self.current_epoch).zfill(4)} || "
                 f"train loss -- {self.epoch_train_loss:.5f} || "
@@ -374,6 +381,16 @@ class Segmentation_Trainer:
                 f"lr -- {self.scheduler.get_last_lr()[0]:.8f} || "
                 f"val mean_dice -- {self.epoch_val_dice:.5f}"
             )
+
+        # Save the last epoch model for further training
+        if self.current_epoch % self.checkpoint_save_frequency == 0:
+            print(f"[info] -- update last model this epoch according to frequency: {self.current_epoch%self.checkpoint_save_frequency == 0}")
+            self.accelerator.print("[info] -- saving last epoch model")
+            save_path = os.path.join(
+                self.checkpoint_save_dir,
+                "last_epoch_model",
+            )
+            self._save_checkpoint(save_path)
 
     def _save_checkpoint(self, filename: str) -> None:
         """_summary_

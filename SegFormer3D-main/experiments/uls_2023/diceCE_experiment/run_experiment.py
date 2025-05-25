@@ -17,6 +17,8 @@ from optimizers.schedulers import build_scheduler
 from train_scripts.trainer_ddp import Segmentation_Trainer
 from architectures.build_architecture import build_architecture
 from dataloaders.build_dataset import build_dataset, build_dataloader
+import warnings
+warnings.filterwarnings("ignore")
 
 
 ##################################################################################################
@@ -139,26 +141,13 @@ def launch_experiment(config_path) -> Dict:
     )
 
     if config["training_parameters"]["load_checkpoint"]["load_full_checkpoint"]:
-        print("Loading checkpoint...")
-        accelerator.load_state(
-            config["training_parameters"]["load_checkpoint"]["load_checkpoint_path"]
-        )
-        # load trainer state
-        trainer_state_dict = torch.load(
-            os.path.join(config["training_parameters"]["load_checkpoint"]["load_checkpoint_path"],
-            "trainer_state_dict.pkl"),
-        )
-        for key, value in trainer_state_dict.items():
-            if hasattr(trainer, key):
-                setattr(trainer, key, value)
-            else:
-                print(f"Key {key} not found in trainer state dict")
-            
-            # load model state
-        if trainer_state_dict["current_epoch"] > config["warmup_scheduler"]["warmup_epochs"]:
-            trainer.scheduler = storage["training_scheduler"]
-        else:
-            trainer.scheduler = storage["warmup_scheduler"]
+        print("[info] -- Loading checkpoint.")
+        load_checkpoint(
+            config=config,
+            accelerator=accelerator,
+            storage=storage,
+            trainer=trainer,)
+
 
     print("[info] -- Setup complete.")
 
@@ -199,6 +188,14 @@ def build_directories(config: Dict) -> None:
     # create necessary directories
     if not os.path.exists(config["training_parameters"]["checkpoint_save_dir"]):
         os.makedirs(config["training_parameters"]["checkpoint_save_dir"])
+    
+    last_model_dir = os.path.join(
+        config["training_parameters"]["checkpoint_save_dir"],
+        "last_epoch_model",
+    )
+    if not os.path.exists(last_model_dir):
+        os.makedirs(last_model_dir)
+
 
     if os.listdir(config["training_parameters"]["checkpoint_save_dir"]) and \
         not config["training_parameters"]["load_checkpoint"]["load_full_checkpoint"]:
@@ -256,6 +253,34 @@ def display_info(config, accelerator, trainset, valset, model):
     )
     accelerator.print(f"-------------------------------------------------------")
 
+
+###################################################################################################
+
+def load_checkpoint(
+        config,
+        accelerator,
+        storage,
+        trainer        
+):
+    accelerator.load_state(
+        config["training_parameters"]["load_checkpoint"]["load_checkpoint_path"]
+    )
+    # load trainer state
+    trainer_state_dict = torch.load(
+        os.path.join(config["training_parameters"]["load_checkpoint"]["load_checkpoint_path"],
+        "trainer_state_dict.pkl"),
+    )
+    for key, value in trainer_state_dict.items():
+        if hasattr(trainer, key):
+            setattr(trainer, key, value)
+        else:
+            print(f"Key {key} not found in trainer state dict")
+        
+    # load current scheduler
+    if trainer_state_dict["current_epoch"] > config["warmup_scheduler"]["warmup_epochs"]:
+        trainer.scheduler = storage["training_scheduler"]
+    else:
+        trainer.scheduler = storage["warmup_scheduler"]
 
 ##################################################################################################
 if __name__ == "__main__":
