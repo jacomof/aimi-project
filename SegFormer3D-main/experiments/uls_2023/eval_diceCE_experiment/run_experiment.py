@@ -37,8 +37,13 @@ def launch_experiment(config_path) -> Dict:
     # set seed
     seed_everything(config)
 
-    # build directories
-    build_directories(config)
+    if config["evaluate_only"]:
+        print("[info] -- Running in evaluation mode only.")
+        if not config["training_parameters"]["load_checkpoint"]["load_full_checkpoint"]:
+            raise ValueError("Checkpoint path must be provided for evaluation.")
+    else:
+        # build directories
+        build_directories(config)
 
     # build training dataset & training data loader
     trainset = build_dataset(

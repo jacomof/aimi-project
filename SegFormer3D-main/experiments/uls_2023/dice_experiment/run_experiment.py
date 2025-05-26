@@ -197,13 +197,22 @@ def load_config(config_path: str) -> Dict:
 
 ##################################################################################################
 def build_directories(config: Dict) -> None:
-    # create necessary directories
-    if not os.path.exists(config["training_parameters"]["checkpoint_save_dir"]):
-        os.makedirs(config["training_parameters"]["checkpoint_save_dir"])
-
+    
+    # check if the checkpoint directory exists and if it is empty
     if os.listdir(config["training_parameters"]["checkpoint_save_dir"]) and \
         not config["training_parameters"]["load_checkpoint"]["load_full_checkpoint"]:
         raise ValueError("checkpoint exits -- preventing file override -- rename file")
+    
+    #create necessary directories
+    if not os.path.exists(config["training_parameters"]["checkpoint_save_dir"]):
+        os.makedirs(config["training_parameters"]["checkpoint_save_dir"])
+
+    last_model_dir = os.path.join(
+        config["training_parameters"]["checkpoint_save_dir"],
+        "last_epoch_model",
+    )
+    if not os.path.exists(last_model_dir):
+        os.makedirs(last_model_dir)
 
 
 ##################################################################################################

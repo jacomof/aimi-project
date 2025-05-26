@@ -83,7 +83,7 @@ training_parameters:
   load_checkpoint: # not implemented yet
     load_full_checkpoint: True
     load_model_only: False
-    load_checkpoint_path: "../../../data/uls2023_seg/model_checkpoints/best_diceCE_checkpoint/last_epoch_model"
+    load_checkpoint_path: "../../../data/uls2023_seg/model_checkpoints/best_diceCE_checkpoint/"
   
 
 # dataset args

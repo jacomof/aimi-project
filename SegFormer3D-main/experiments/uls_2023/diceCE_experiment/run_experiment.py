@@ -185,6 +185,12 @@ def load_config(config_path: str) -> Dict:
 
 ##################################################################################################
 def build_directories(config: Dict) -> None:
+
+    # check if the checkpoint save directory exists
+    if os.listdir(config["training_parameters"]["checkpoint_save_dir"]) and \
+        not config["training_parameters"]["load_checkpoint"]["load_full_checkpoint"]:
+        raise ValueError("checkpoint exits -- preventing file override -- rename file")
+    
     # create necessary directories
     if not os.path.exists(config["training_parameters"]["checkpoint_save_dir"]):
         os.makedirs(config["training_parameters"]["checkpoint_save_dir"])
@@ -197,9 +203,7 @@ def build_directories(config: Dict) -> None:
         os.makedirs(last_model_dir)
 
 
-    if os.listdir(config["training_parameters"]["checkpoint_save_dir"]) and \
-        not config["training_parameters"]["load_checkpoint"]["load_full_checkpoint"]:
-        raise ValueError("checkpoint exits -- preventing file override -- rename file")
+
 
 
 ##################################################################################################

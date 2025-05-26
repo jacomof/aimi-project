@@ -6,8 +6,8 @@
 #SBATCH --cpus-per-task=6
 #SBATCH --gres=gpu:1
 #SBATCH --time=48:00:00
-#SBATCH --output=/home/jfigueira/aimi-project/logs/experiment_nnUNet_%j_%a.out
-#SBATCH --error=/home/jfigueira/aimi-project/logs/experiment_nnUNet_%j_%a.err
+#SBATCH --output=/home/jfigueira/aimi-project/logs/segformer_diceCE_%j_%a.out
+#SBATCH --error=/home/jfigueira/aimi-project/logs/segformer_diceCE_%j_%a.err
 #SBATCH --mail-type=BEGIN,END,FAIL
 
 

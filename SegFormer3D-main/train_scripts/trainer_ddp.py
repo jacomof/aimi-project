@@ -323,6 +323,10 @@ class Segmentation_Trainer:
                 # calculate loss
                 loss = self.criterion(predicted, labels)
 
+                preds = torch.sigmoid(predicted[:, 1:, ...])
+                y_pred = preds > 0.5
+                y_true = labels[:, 1:, ...]
+
                 # calculate metrics
                 if self.calculate_metrics:
                     mean_dice, mean_uls_metric = self._calc_dice_metric(data, labels, use_ema)
