@@ -190,3 +190,5 @@ model_checkpoints/
 # SegFormer3D-main/data/uls2023_seg/uls2023_raw_data/train
 # SegFormer3D-main/data/uls2023_seg/ULS2023_Training_Data
 # SegFormer3D-main/data/uls2023_seg/model_checkpoints
+nnUNet3DEnsemble.zip
+test/architecture/input/images/stacked-3d-ct-lesion-volumes/stacked_voi_sample.mha

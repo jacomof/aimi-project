@@ -291,6 +291,69 @@ class Segmentation_Trainer:
             # update schduler
             self.scheduler.step()
 
+    def _run_eval(self, use_ema=False) -> None:
+        """_summary_"""
+        # Tell wandb to watch the model and optimizer values
+
+        self.accelerator.print("[info] -- Starting model evaluation")
+
+        # Initialize the training loss for the current Epoch
+        epoch_avg_loss = 0.0
+        total_dice = 0.0
+        total_uls_metric = 0.0
+
+        # set model to train mode
+        self.model.eval()
+
+        # set epoch to shift data order each epoch
+        # self.val_dataloader.sampler.set_epoch(self.current_epoch)
+        with torch.no_grad():
+            for index, (raw_data) in enumerate(tqdm(self.val_dataloader)):
+                # get data ex: (data, target)
+                data, labels = (
+                    raw_data["image"],
+                    raw_data["label"],
+                )
+                # forward pass
+                if use_ema:
+                    predicted = self.ema_model.forward(data)
+                else:
+                    predicted = self.model.forward(data)
+
+                # calculate loss
+                loss = self.criterion(predicted, labels)
+
+                # calculate metrics
+                if self.calculate_metrics:
+                    mean_dice, mean_uls_metric = self._calc_dice_metric(data, labels, use_ema)
+                    # keep track of number of total correct
+                    total_dice += mean_dice
+                    total_uls_metric += mean_uls_metric
+
+                # update loss for the current batch
+                epoch_avg_loss += loss.item()
+
+        if use_ema:
+            self.epoch_val_ema_dice = total_dice / float(index + 1)
+        else:
+            self.epoch_val_dice = total_dice / float(index + 1)
+            self.epoch_val_uls_metric = total_uls_metric / float(index + 1)
+
+        epoch_avg_loss = epoch_avg_loss / float(index + 1)
+
+
+        self.epoch_val_loss = epoch_avg_loss
+
+        self._update_metrics()
+
+        self.accelerator.print(
+            f"eval loss -- {colored(f'{self.epoch_val_loss:.5f}', color='green')} || "
+            f"eval mean_uls_metric -- {colored(f'{self.best_val_uls_metric:.5f}', color='green')} -- saved"
+            f"eval mean_dice -- {colored(f'{self.best_val_dice:.5f}', color='green')} -- saved"
+        )
+
+
+
     def _update_scheduler(self) -> None:
         """_summary_"""
         if self.warmup_enabled:
@@ -488,7 +551,11 @@ class Segmentation_Trainer:
         self.accelerator.end_training()
 
     def evaluate(self) -> None:
-        raise NotImplementedError("evaluate function is not implemented yet")
+        self.accelerator.print(
+            colored("[info] -- starting evaluation", color="red")
+        )
+        self._run_eval()
+        self.accelerator.end_training()
 
 
 #################################################################################################
