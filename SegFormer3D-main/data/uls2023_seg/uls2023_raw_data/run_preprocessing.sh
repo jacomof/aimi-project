@@ -6,8 +6,8 @@
 #SBATCH --cpus-per-task=6
 #SBATCH --gres=gpu:1
 #SBATCH --time=48:00:00
-#SBATCH --output=/home/jfigueira/aimi-project/logs/experiment_nnUNet_%j_%a.out
-#SBATCH --error=/home/jfigueira/aimi-project/logs/experiment_nnUNet_%j_%a.err
+#SBATCH --output=/home/ldokovic/aimi-project/logs/experiment_nnUNet_%j_%a.out
+#SBATCH --error=/home/ldokovic/aimi-project/logs/experiment_nnUNet_%j_%a.err
 #SBATCH --mail-type=BEGIN,END,FAIL
 
 ### notes
@@ -16,5 +16,5 @@
 
 # execute train CLI
 # assumes current directory is aimi-project
-source /home/jfigueira/aimi-project/SegFormer3D-main/venv_segformer/bin/activate
+source /home/ldokovic/aimi-project/SegFormer3D-main/venv_segformer/bin/activate
 python uls2023_seg_preprocess.py --cpu_count 8
