@@ -7,7 +7,7 @@ wandb_parameters:
   name: segformer3d_adamw_batch8_diceCEloss_continued
   resume: False
   tags: ["aimilab", "dice", "b0_model", "adamw"]
-  dir: "/home/jfigueira/aimi-project/data/wandb_logs"
+  dir: "/home/ldokovic/aimi-project/data/wandb_logs"
 
 
 evaluate_only: True
@@ -116,7 +116,7 @@ dataset_parameters:
     drop_last: True
 
   val_dataloader_args:
-    batch_size: 8
+    batch_size: 1
     shuffle: False
     num_workers: 6
     drop_last: False

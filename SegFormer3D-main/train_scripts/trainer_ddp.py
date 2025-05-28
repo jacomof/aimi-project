@@ -11,6 +11,8 @@ from metrics.segmentation_metrics import SlidingWindowInference
 import kornia
 import sys
 
+from tta_aug.tta_augmentations import test_time_augmentation
+
 
 #################################################################################################
 class Segmentation_Trainer:
@@ -302,8 +304,11 @@ class Segmentation_Trainer:
         total_dice = 0.0
         total_uls_metric = 0.0
 
+        my_total_uls_metric = 0.0
+
         # set model to train mode
         self.model.eval()
+        print("YESS")
 
         # set epoch to shift data order each epoch
         # self.val_dataloader.sampler.set_epoch(self.current_epoch)
@@ -320,28 +325,39 @@ class Segmentation_Trainer:
                 else:
                     predicted = self.model.forward(data)
 
-                # calculate loss
-                loss = self.criterion(predicted, labels)
+                torch.save(data, f'/vol/csedu-nobackup/course/IMC037_aimi/group08/aimi-project/data/model_predictions_best_diceCE_checkpoint/input_tensor_idx{index}.pt')
+                torch.save(predicted, f'/vol/csedu-nobackup/course/IMC037_aimi/group08/aimi-project/data/model_predictions_best_diceCE_checkpoint/pred_tensor_idx{index}.pt')
+                torch.save(labels, f'/vol/csedu-nobackup/course/IMC037_aimi/group08/aimi-project/data/model_predictions_best_diceCE_checkpoint/label_tensor_idx{index}.pt')
 
-                preds = torch.sigmoid(predicted[:, 1:, ...])
-                y_pred = preds > 0.5
-                y_true = labels[:, 1:, ...]
+                # # calculate loss
+                # loss = self.criterion(predicted, labels)
 
-                # calculate metrics
-                if self.calculate_metrics:
-                    mean_dice, mean_uls_metric = self._calc_dice_metric(data, labels, use_ema)
-                    # keep track of number of total correct
-                    total_dice += mean_dice
-                    total_uls_metric += mean_uls_metric
+                # y_pred = test_time_augmentation(self.model, data, morph_op='opening')
+                # y_true = labels[:, 1:, ...]
+
+                # my_uls_metric = self.sliding_window_inference.evaluator.ULS_score_metric(y_pred, y_true)
+                # # print(f"ULS: {my_uls_metric}")
+                
+
+
+                # # calculate metrics
+                # if self.calculate_metrics:
+                #     mean_dice, mean_uls_metric = self._calc_dice_metric(data, labels, use_ema)
+                #     # keep track of number of total correct
+                #     total_dice += mean_dice
+                #     total_uls_metric += mean_uls_metric
+
+                #     my_total_uls_metric += my_uls_metric
 
                 # update loss for the current batch
-                epoch_avg_loss += loss.item()
+                # epoch_avg_loss += loss.item()
 
         if use_ema:
             self.epoch_val_ema_dice = total_dice / float(index + 1)
         else:
             self.epoch_val_dice = total_dice / float(index + 1)
             self.epoch_val_uls_metric = total_uls_metric / float(index + 1)
+            self.my_epoch_val_uls_metric = my_total_uls_metric / float(index + 1)
 
         epoch_avg_loss = epoch_avg_loss / float(index + 1)
 
@@ -352,7 +368,8 @@ class Segmentation_Trainer:
 
         self.accelerator.print(
             f"eval loss -- {colored(f'{self.epoch_val_loss:.5f}', color='green')} || "
-            f"eval mean_uls_metric -- {colored(f'{self.best_val_uls_metric:.5f}', color='green')} -- saved"
+            f"eval mean_uls_metric -- {colored(f'{self.epoch_val_uls_metric:.5f}', color='green')} -- saved"
+            f"eval my_mean_uls_metric -- {colored(f'{self.my_epoch_val_uls_metric:.5f}', color='green')} -- saved"
             f"eval mean_dice -- {colored(f'{self.best_val_dice:.5f}', color='green')} -- saved"
         )
 

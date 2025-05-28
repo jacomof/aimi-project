@@ -59,7 +59,7 @@ class SlidingWindowInference:
         #background_dice = acc[0]
         #lesion_dice = acc[1]
         # ET acc: acc[2]
-        print(f"acc: {acc}")
+        # print(f"acc: {acc}")
 
 
 

@@ -42,10 +42,10 @@ sympy==1.13.3
 tensorboard==2.19.0
 tensorboard-data-server==0.7.2
 threadpoolctl==3.6.0
-torch==2.7.0+cu118
-torchaudio==2.7.0+cu118
+torch==2.7.0
+torchaudio==2.7.0
 torchmetrics==1.7.1
-torchvision==0.22.0+cu118
+torchvision==0.22.0
 tqdm==4.67.1
 typing_extensions==4.12.2
 tzdata==2025.2
@@ -55,9 +55,12 @@ evalutils==0.4.2
 nibabel==5.1.0
 scikit-image==0.19.3
 click==8.1.5
-torch==2.5.1
+# torch==2.5.1
 -e /vol/csedu-nobackup/course/IMC037_aimi/group08/aimi-project/src/nnUNet
-batchgenerators==0.23
-blosc2==2.5.1
-acvl_utils==0.2
+batchgenerators==0.25.1
+blosc2==3.0.0b4
+acvl_utils==0.2.3
 jupyterlab==4.4.2
+termcolor
+accelerate
+monai
