@@ -63,7 +63,7 @@ COPY --chown=user:user ./architecture/extensions/nnunetv2/ /opt/algorithm/nnunet
 COPY --chown=user:user ./architecture/nnUNet_results/ /opt/ml/model/
 
 # Copy container testing data to docker (uncomment if you want to see if the model works and put a test image and spacing in this repo)
-#COPY --chown=user:user /architecture/input/ /input/
+COPY --chown=user:user /architecture/input/ /input/
 
 # Set environment variable defaults
 ENV nnUNet_raw="/opt/algorithm/nnunet/nnUNet_raw" \

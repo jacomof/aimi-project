@@ -11,6 +11,8 @@ from metrics.segmentation_metrics import SlidingWindowInference
 import kornia
 import sys
 
+from tta_aug.tta_augmentations import test_time_augmentation
+
 
 #################################################################################################
 class Segmentation_Trainer:
@@ -83,6 +85,8 @@ class Segmentation_Trainer:
         self.epoch_val_ema_dice = 0.0
         self.best_val_ema_dice = 0.0
         self.accelerator.print("[info] -- Trainer initialized!")
+        
+        # model saving parameters
 
     def _configure_trainer(self) -> None:
         """
@@ -99,6 +103,7 @@ class Segmentation_Trainer:
         self.checkpoint_save_dir = self.config["training_parameters"][
             "checkpoint_save_dir"
         ]
+        self.checkpoint_save_frequency = self.config["training_parameters"]["checkpoint_save_frequency"]
 
     def _load_checkpoint(self):
         raise NotImplementedError
@@ -288,6 +293,88 @@ class Segmentation_Trainer:
             # update schduler
             self.scheduler.step()
 
+    def _run_eval(self, use_ema=False) -> None:
+        """_summary_"""
+        # Tell wandb to watch the model and optimizer values
+
+        self.accelerator.print("[info] -- Starting model evaluation")
+
+        # Initialize the training loss for the current Epoch
+        epoch_avg_loss = 0.0
+        total_dice = 0.0
+        total_uls_metric = 0.0
+
+        my_total_uls_metric = 0.0
+
+        # set model to train mode
+        self.model.eval()
+        print("YESS")
+
+        # set epoch to shift data order each epoch
+        # self.val_dataloader.sampler.set_epoch(self.current_epoch)
+        with torch.no_grad():
+            for index, (raw_data) in enumerate(tqdm(self.val_dataloader)):
+                # get data ex: (data, target)
+                data, labels = (
+                    raw_data["image"],
+                    raw_data["label"],
+                )
+                # forward pass
+                if use_ema:
+                    predicted = self.ema_model.forward(data)
+                else:
+                    predicted = self.model.forward(data)
+
+                torch.save(data, f'/vol/csedu-nobackup/course/IMC037_aimi/group08/aimi-project/data/model_predictions_best_diceCE_checkpoint/input_tensor_idx{index}.pt')
+                torch.save(predicted, f'/vol/csedu-nobackup/course/IMC037_aimi/group08/aimi-project/data/model_predictions_best_diceCE_checkpoint/pred_tensor_idx{index}.pt')
+                torch.save(labels, f'/vol/csedu-nobackup/course/IMC037_aimi/group08/aimi-project/data/model_predictions_best_diceCE_checkpoint/label_tensor_idx{index}.pt')
+
+                # # calculate loss
+                # loss = self.criterion(predicted, labels)
+
+                # y_pred = test_time_augmentation(self.model, data, morph_op='opening')
+                # y_true = labels[:, 1:, ...]
+
+                # my_uls_metric = self.sliding_window_inference.evaluator.ULS_score_metric(y_pred, y_true)
+                # # print(f"ULS: {my_uls_metric}")
+                
+
+
+                # # calculate metrics
+                # if self.calculate_metrics:
+                #     mean_dice, mean_uls_metric = self._calc_dice_metric(data, labels, use_ema)
+                #     # keep track of number of total correct
+                #     total_dice += mean_dice
+                #     total_uls_metric += mean_uls_metric
+
+                #     my_total_uls_metric += my_uls_metric
+
+                # update loss for the current batch
+                # epoch_avg_loss += loss.item()
+
+        if use_ema:
+            self.epoch_val_ema_dice = total_dice / float(index + 1)
+        else:
+            self.epoch_val_dice = total_dice / float(index + 1)
+            self.epoch_val_uls_metric = total_uls_metric / float(index + 1)
+            self.my_epoch_val_uls_metric = my_total_uls_metric / float(index + 1)
+
+        epoch_avg_loss = epoch_avg_loss / float(index + 1)
+
+
+        self.epoch_val_loss = epoch_avg_loss
+
+        self._update_metrics()
+
+        self.accelerator.print(
+            f"eval loss -- {colored(f'{self.epoch_val_loss:.5f}', color='green')} || "
+            f"eval mean_uls_metric -- {colored(f'{self.epoch_val_uls_metric:.5f}', color='green')} -- saved"
+            f"eval my_mean_uls_metric -- {colored(f'{self.my_epoch_val_uls_metric:.5f}', color='green')} -- saved"
+            f"eval mean_dice -- {colored(f'{self.best_val_dice:.5f}', color='green')} -- saved"
+        )
+
+
+
     def _update_scheduler(self) -> None:
         """_summary_"""
         if self.warmup_enabled:
@@ -346,6 +433,8 @@ class Segmentation_Trainer:
         """_summary_"""
         # print only on the first gpu
         if self.epoch_val_uls_metric >= self.best_val_uls_metric:
+            self.accelerator.print(
+                f"[info] -- best model updated at epoch {self.current_epoch}")
             # change path name based on cutoff epoch
             if self.current_epoch <= self.cutoff_epoch:
                 save_path = self.checkpoint_save_dir
@@ -367,6 +456,8 @@ class Segmentation_Trainer:
                 f"val mean_dice -- {colored(f'{self.best_val_dice:.5f}', color='green')} -- saved"
             )
         else:
+            self.accelerator.print(f"[info] -- best model not updated at epoch {self.current_epoch}")
+
             self.accelerator.print(
                 f"epoch -- {str(self.current_epoch).zfill(4)} || "
                 f"train loss -- {self.epoch_train_loss:.5f} || "
@@ -374,6 +465,16 @@ class Segmentation_Trainer:
                 f"lr -- {self.scheduler.get_last_lr()[0]:.8f} || "
                 f"val mean_dice -- {self.epoch_val_dice:.5f}"
             )
+
+        # Save the last epoch model for further training
+        if self.current_epoch % self.checkpoint_save_frequency == 0:
+            print(f"[info] -- update last model this epoch according to frequency: {self.current_epoch%self.checkpoint_save_frequency == 0}")
+            self.accelerator.print("[info] -- saving last epoch model")
+            save_path = os.path.join(
+                self.checkpoint_save_dir,
+                "last_epoch_model",
+            )
+            self._save_checkpoint(save_path)
 
     def _save_checkpoint(self, filename: str) -> None:
         """_summary_
@@ -471,7 +572,11 @@ class Segmentation_Trainer:
         self.accelerator.end_training()
 
     def evaluate(self) -> None:
-        raise NotImplementedError("evaluate function is not implemented yet")
+        self.accelerator.print(
+            colored("[info] -- starting evaluation", color="red")
+        )
+        self._run_eval()
+        self.accelerator.end_training()
 
 
 #################################################################################################

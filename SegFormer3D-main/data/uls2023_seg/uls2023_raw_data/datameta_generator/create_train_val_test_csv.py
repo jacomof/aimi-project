@@ -101,5 +101,5 @@ if __name__ == "__main__":
         # where to save the train, val and test csv file relative to the current directory
         save_dir=".",
         train_split_perc=0.85,
-        val_split_perc=0.10,
+        val_split_perc=0.15,
     )
