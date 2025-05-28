@@ -80,12 +80,12 @@ def create_train_val_test_csv_from_data_folder(
 
     # write csv files to the drive!
     train_df.to_csv(
-        save_dir + "/train.csv",
+        save_dir + "/train_oversampling.csv",
         header=["data_path", "case_name"],
         index=False,
     )
     validation_df.to_csv(
-        save_dir + "/validation.csv",
+        save_dir + "/validation_oversampling.csv",
         header=["data_path", "case_name"],
         index=False,
     )
@@ -95,9 +95,9 @@ def create_train_val_test_csv_from_data_folder(
 if __name__ == "__main__":
     create_train_val_test_csv_from_data_folder(
         # path to the train data folder
-        folder_dir="../../ULS2023_Training_Data",
+        folder_dir="../../ULS2023_Training_Data_Oversampling",
         # this is inferred from where the actual experiments are run relative to the data folder
-        append_dir="../../../data/uls2023_seg/ULS2023_Training_Data/",
+        append_dir="../../../data/uls2023_seg/ULS2023_Training_Data_Oversampling/",
         # where to save the train, val and test csv file relative to the current directory
         save_dir=".",
         train_split_perc=0.85,
