@@ -7,8 +7,11 @@ wandb_parameters:
   name: segformer3d_adamw_batch_diceloss_oversampled
   resume: False
   tags: ["aimilab", "dice", "b0_model", "adamw"]
-  dir: "/d/hpc/projects/FRI/jf73497/aimi-project-data/wandb_logs"
+  dir: "/home/jfigueira/aimi-project/data/wandb_logs"
 
+
+evaluate_only: False
+profile: True
 
 # input size -> 64, 128, 128
 # model parameters
@@ -30,14 +33,14 @@ model_parameters:
 
 # loss function
 loss_fn:
-  loss_type: "soft_dice"
+  loss_type: "dice"
   loss_args: None
 
 # optimizer
 optimizer:
   optimizer_type: "adamw"
   optimizer_args:
-    lr: 0.00016 # base lr: 0.0001
+    lr: 0.0008 # base lr: 0.0001
     weight_decay: 0.01
 
 # schedulers
@@ -77,7 +80,7 @@ training_parameters:
   calculate_metrics: True
   grad_accumulate_steps: 1 # default: 1
   checkpoint_save_dir: "../../../data/uls2023_oversampled_seg/model_checkpoints/best_dice_checkpoint_continued"
-  checkpoint_save_frequency: 3 
+  checkpoint_save_frequency: 1 
   load_checkpoint: # not implemented yet
     load_full_checkpoint: True
     load_model_only: False
@@ -107,13 +110,13 @@ dataset_parameters:
     # and put it under ../../../data/brats2017_seg and change the fold_id accrodingly
 
   train_dataloader_args:
-    batch_size: 32 
+    batch_size: 8 
     shuffle: True
-    num_workers: 12
+    num_workers: 6
     drop_last: True
 
   val_dataloader_args:
-    batch_size: 32
+    batch_size: 8
     shuffle: False
-    num_workers: 12
+    num_workers: 6
     drop_last: False

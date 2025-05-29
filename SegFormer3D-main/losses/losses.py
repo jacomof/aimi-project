@@ -54,6 +54,7 @@ class DC_and_BCE_loss(nn.Module):
         loss = self._loss(predicted, target)
         return loss
 
+
 ###########################################################################
 def build_loss_fn(loss_type: str, loss_args: Dict = None):
     if loss_type == "crossentropy":

@@ -166,7 +166,15 @@ def launch_experiment(config_path) -> Dict:
     print("[info] -- Setup complete.")
 
     # run train
-    trainer.train()
+    if config["profile"]:
+        print("[info] -- Profiling enabled. Running in profiling mode.")
+        trainer.profile()
+    elif config["evaluate_only"]:
+        print("[info] -- Evaluate only mode. Running evaluation.")
+        trainer.evaluate()
+    else:
+        print("[info] -- Training mode. Starting training.")
+        trainer.train()
 
 
 ##################################################################################################
@@ -201,10 +209,9 @@ def load_config(config_path: str) -> Dict:
 def build_directories(config: Dict) -> None:
 
 
-    if os.path.exists(config["training_parameters"]["checkpoint_save_dir"]) and \
-        not config["training_parameters"]["load_checkpoint"]["load_full_checkpoint"]:
-        raise ValueError("checkpoint exits -- preventing file override -- rename file")
-    
+    # if os.listdir(config["training_parameters"]["checkpoint_save_dir"]) and \
+    #     not config["training_parameters"]["load_checkpoint"]["load_full_checkpoint"]:
+    #     raise ValueError("checkpoint exits -- preventing file override -- rename file")
     # create necessary directories
     if not os.path.exists(config["training_parameters"]["checkpoint_save_dir"]):
         os.makedirs(config["training_parameters"]["checkpoint_save_dir"])

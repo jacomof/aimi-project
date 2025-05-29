@@ -14,6 +14,7 @@ from monai.transforms import (
     EnsureType,
 )
 import SimpleITK as sitk
+import blosc2
 # whoever wrote this code knew what he was doing (hint: It was me!)
 
 """
@@ -220,6 +221,39 @@ class ULS2023Preprocess:
     
         return im_transv, label, case_name
 
+    @staticmethod
+    def save_case(
+            data: np.ndarray,
+            seg: np.ndarray,
+            properties: dict,
+            output_filename_truncated_data: str,
+            output_filename_truncated_seg: str = None,
+            chunks=None,
+            blocks=None,
+            chunks_seg=None,
+            blocks_seg=None,
+            clevel: int = 8,
+            codec=blosc2.Codec.ZSTD
+    ):
+        blosc2.set_nthreads(1)
+        if chunks_seg is None:
+            chunks_seg = chunks
+        if blocks_seg is None:
+            blocks_seg = blocks
+
+        cparams = {
+            'codec': codec,
+            # 'filters': [blosc2.Filter.SHUFFLE],
+            # 'splitmode': blosc2.SplitMode.ALWAYS_SPLIT,
+            'clevel': clevel,
+        }
+        # print(output_filename_truncated, data.shape, seg.shape, blocks, chunks, blocks_seg, chunks_seg, data.dtype, seg.dtype)
+        blosc2.asarray(np.ascontiguousarray(data), urlpath=output_filename_truncated_data + '.b2nd', chunks=chunks,
+                       blocks=blocks, cparams=cparams)
+        blosc2.asarray(np.ascontiguousarray(seg), urlpath=output_filename_truncated_seg + '_seg.b2nd', chunks=chunks_seg,
+                       blocks=blocks_seg, cparams=cparams)
+
+
 
     def __call__(self):
         print("started preprocessing ULS2023...")
@@ -240,10 +274,17 @@ class ULS2023Preprocess:
         data_save_path = os.path.join(self.save_dir, case_name)
         if not os.path.exists(data_save_path):
             os.makedirs(data_save_path)
-        tensor_fn = data_save_path + f"/{case_name}_im.pt"
-        label_fn = data_save_path + f"/{case_name}_label.pt"
-        torch.save(tensor, tensor_fn)
-        torch.save(label, label_fn)
+        case_path = data_save_path + f"/{case_name}"
+        self.save_case(
+            data=tensor,
+            seg=label,
+            properties={},
+            output_filename_truncated=case_path,
+            chunks=(1, 128, 128, 64),
+            chunks_seg=(2, 128, 128, 64),
+            clevel=8,
+            codec=blosc2.Codec.ZSTD
+        )
 
 
 
