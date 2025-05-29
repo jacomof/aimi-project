@@ -4,10 +4,10 @@ wandb_parameters:
   mode: "online" # set this to "online" if you want to log to wandb
   entity: gatonegro
   group: first_experiment
-  name: segformer3d_adamw_batch_diceloss_continue_training
+  name: segformer3d_adamw_batch_diceloss_oversampled
   resume: False
   tags: ["aimilab", "dice", "b0_model", "adamw"]
-  dir: "/home/jfigueira/aimi-project/data/wandb_logs"
+  dir: "/d/hpc/projects/FRI/jf73497/aimi-project-data/wandb_logs"
 
 
 # input size -> 64, 128, 128
@@ -30,14 +30,14 @@ model_parameters:
 
 # loss function
 loss_fn:
-  loss_type: "dice"
+  loss_type: "soft_dice"
   loss_args: None
 
 # optimizer
 optimizer:
   optimizer_type: "adamw"
   optimizer_args:
-    lr: 0.0008 # base lr: 0.0001
+    lr: 0.00016 # base lr: 0.0001
     weight_decay: 0.01
 
 # schedulers
@@ -107,13 +107,13 @@ dataset_parameters:
     # and put it under ../../../data/brats2017_seg and change the fold_id accrodingly
 
   train_dataloader_args:
-    batch_size: 8 
+    batch_size: 32 
     shuffle: True
-    num_workers: 6
+    num_workers: 12
     drop_last: True
 
   val_dataloader_args:
-    batch_size: 8
+    batch_size: 32
     shuffle: False
-    num_workers: 6
+    num_workers: 12
     drop_last: False

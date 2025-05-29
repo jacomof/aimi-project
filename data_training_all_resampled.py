@@ -87,11 +87,10 @@ def train_on_single_gpu(dataset_id: str, trainer_name: str):
     for modality in modalities:
         for fold in range(1):
             cmd = [
-                "CUDA_VISIBLE_DEVICES=0",
                 "nnUNetv2_train",
                 dataset_id,
                 modality,
-                str(fold),
+                "all",
                 "--npz",
                 "--c",
                 "-tr",
@@ -109,15 +108,14 @@ def train_on_single_gpu(dataset_id: str, trainer_name: str):
 
 if __name__ == "__main__":
     trainer = "nnUNetTrainer_ULS_400_QuarterLR"
-    source_root = "/home/mdiazlupone/aimi-project/data/fully_annotated_data_copy"
-    target_root = "/home/mdiazlupone/aimi-project/data/raw_oversampled_mauro/"
+    #source_root = "/home/mdiazlupone/aimi-project/data/fully_annotated_data_copy"
+    #target_root = "/home/mdiazlupone/aimi-project/data/raw_oversampled_mauro/"
     dataset_id = "002"
 
     # convert_to_mixed_dataset(source_root, target_root, split_percent=0.0)
 
     #print("Running nnUNetv2_plan_and_preprocess...")
     # subprocess.run(["nnUNetv2_plan_and_preprocess", "-d", dataset_id, "-c", "3d_fullres", "-pl", "nnUNetPlannerResEncM"], check=True)
-    # subprocess.run(["nnUNetv2_plan_experiment", "-d", dataset_id, "-pl", "nnUNetPlannerResEncM"], check=True)
-    print("Running nnUNetv2 training...")
+    # print("Running nnUNetv2 training...")
     train_on_single_gpu(dataset_id, trainer)
 

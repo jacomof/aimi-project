@@ -51,8 +51,8 @@ class ULS2023Dataset(Dataset):
         volume_fp = os.path.join(data_path, f"{case_name}_im.pt")
         label_fp = os.path.join(data_path, f"{case_name}_label.pt")
         # load the preprocessed tensors
-        volume = torch.load(volume_fp)
-        label = torch.load(label_fp)
+        volume = torch.load(volume_fp, weights_only=False)
+        label = torch.load(label_fp, weights_only=False)
 
         data = {"image": torch.from_numpy(volume).float(), "label": torch.from_numpy(label).float()}
 

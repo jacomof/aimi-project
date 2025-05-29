@@ -88,6 +88,9 @@ class ULS2023Preprocess:
         print(f"Number of cases: {len(self.case_name)}")
         self.cpu_count = cpu_count
 
+        if not os.path.exists(self.save_dir):
+            os.makedirs(self.save_dir)
+
     def __len__(self):
         return self.case_name.__len__()
 
@@ -224,17 +227,14 @@ class ULS2023Preprocess:
     def __call__(self):
         print("started preprocessing ULS2023...")
         with Pool(processes=self.cpu_count) as multi_p:
-            multi_p.map_async(func=self.process, iterable=range(self.__len__()))
+            result = multi_p.map_async(func=self.process, iterable=range(self.__len__()))
             multi_p.close()
             multi_p.join()
+            result.get()
 
         print("finished preprocessing ULS2023...")
 
     def process(self, idx):
-        full_savedir = os.path.abspath(self.save_dir)
-        print("Save directory: ", full_savedir)
-        if not os.path.exists(self.save_dir):
-            os.makedirs(self.save_dir)
         tensor, label, case_name = self.__getitem__(idx)
         # creating the folder for the current case id
         data_save_path = os.path.join(self.save_dir, case_name)
@@ -306,8 +306,9 @@ if __name__ == "__main__":
             f"cpu_count should be less than or equal to {os.cpu_count()}"
         )
 
-    uls2023_prep = ULS2023Preprocess(root_dir="./",
-    	train_folder_name = "train",
+    uls2023_prep = ULS2023Preprocess(
+        root_dir="/d/hpc/home/jf73497/projects/aimi-project-data/raw/",
+    	train_folder_name = "Dataset001_MIX/",
         save_dir="../ULS2023_Training_Data",
         cpu_count=args.cpu_count
     )
