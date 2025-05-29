@@ -166,7 +166,15 @@ def launch_experiment(config_path) -> Dict:
     print("[info] -- Setup complete.")
 
     # run train
-    trainer.train()
+    if config["profile"]:
+        print("[info] -- Profiling enabled. Running in profiling mode.")
+        trainer.profile()
+    elif config["evaluate_only"]:
+        print("[info] -- Evaluate only mode. Running evaluation.")
+        trainer.evaluate()
+    else:
+        print("[info] -- Training mode. Starting training.")
+        trainer.train()
 
 
 ##################################################################################################

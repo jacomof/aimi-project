@@ -42,7 +42,7 @@ sympy==1.13.3
 tensorboard==2.19.0
 tensorboard-data-server==0.7.2
 threadpoolctl==3.6.0
-torch==2.7.0+cu118
+torch==2.5.1
 torchaudio==2.7.0+cu118
 torchmetrics==1.7.1
 torchvision==0.22.0+cu118

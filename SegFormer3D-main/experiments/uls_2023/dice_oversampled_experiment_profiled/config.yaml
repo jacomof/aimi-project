@@ -10,6 +10,9 @@ wandb_parameters:
   dir: "/home/jfigueira/aimi-project/data/wandb_logs"
 
 
+evaluate_only: False
+profile: True
+
 # input size -> 64, 128, 128
 # model parameters
 model_name: segformer3d
@@ -30,7 +33,7 @@ model_parameters:
 
 # loss function
 loss_fn:
-  loss_type: "softdice"
+  loss_type: "dice"
   loss_args: None
 
 # optimizer
@@ -77,7 +80,7 @@ training_parameters:
   calculate_metrics: True
   grad_accumulate_steps: 1 # default: 1
   checkpoint_save_dir: "../../../data/uls2023_oversampled_seg/model_checkpoints/best_dice_checkpoint_continued"
-  checkpoint_save_frequency: 3 
+  checkpoint_save_frequency: 1 
   load_checkpoint: # not implemented yet
     load_full_checkpoint: True
     load_model_only: False

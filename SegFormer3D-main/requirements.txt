@@ -32,3 +32,6 @@ tqdm==4.65.0
 typing_extensions==4.8.0
 wandb==0.15.12
 simpleitk==2.5.0
+zarr
+batchgenerators
+blosc2==3.3.4

@@ -126,7 +126,7 @@ class Segmentation_Trainer:
 
         # set epoch to shift data order each epoch
         # self.train_dataloader.sampler.set_epoch(self.current_epoch)
-
+        
         for index, raw_data in enumerate(self.train_dataloader):
             
             # add in gradient accumulation
@@ -168,6 +168,90 @@ class Segmentation_Trainer:
                             f"train loss: {(epoch_avg_loss / (index + 1)):.5f} -- "
                             f"lr: {self.scheduler.get_last_lr()[0]}"
                         )
+
+        epoch_avg_loss = epoch_avg_loss / (index + 1)
+
+        return epoch_avg_loss
+    
+    def _train_step_profiled(self) -> float:
+        import time
+        # Initialize the training loss for the current epoch
+        epoch_avg_loss = 0.0
+
+        # set model to train
+        self.model.train()
+
+        # set epoch to shift data order each epoch
+        # self.train_dataloader.sampler.set_epoch(self.current_epoch)
+        batch_start_time = time.time()
+        first = True
+        for index, raw_data in enumerate(self.train_dataloader):
+
+            batch_time = time.time() - batch_start_time
+
+            # add in gradient accumulation
+            # TODO: test gradient accumulation
+            with self.accelerator.accumulate(self.model):
+
+                # get data ex: (data, target)
+                data, labels = (
+                    raw_data["image"],
+                    raw_data["label"],
+                )
+                # print("data ", data.shape, "label ", labels.shape)
+
+                # zero out existing gradients
+                self.optimizer.zero_grad()
+
+                # forward pass
+                forward_start = time.time()
+                predicted = self.model.forward(data)
+                forward_time = time.time() - forward_start
+
+                # calculate loss
+                loss_start = time.time()
+                loss = self.criterion(predicted, labels)
+                loss_time = time.time() - loss_start
+
+                # backward pass
+                backward_start = time.time()
+                self.accelerator.backward(loss)
+                backward_time = time.time() - backward_start
+
+                self.accelerator.print(
+                    f"[info] -- gpu id: {self.accelerator.device} -- "
+                    f"batch {index} times: "
+                    f"data: {batch_time:.4f}s | "
+                    f"forward: {forward_time:.4f}s | "
+                    f"loss: {loss_time:.4f}s | "
+                    f"backward: {backward_time:.4f}s"
+                )
+
+                # update gradients
+                self.optimizer.step()
+
+                # model update with ema if available
+                if self.ema_enabled and (self.accelerator.is_main_process):
+                    self.ema_model.update_parameters(self.model)
+
+                # update loss
+                epoch_avg_loss += loss.item()
+
+                if self.print_every:
+                    if index % self.print_every == 0:
+                        self.accelerator.print(
+                            f"epoch: {str(self.current_epoch).zfill(4)} -- "
+                            f"train loss: {(epoch_avg_loss / (index + 1)):.5f} -- "
+                            f"lr: {self.scheduler.get_last_lr()[0]}"
+                        )
+                self.accelerator.print(
+                    f"[info] -- batch {index} times: "
+                    f"get_batch: {batch_time:.4f}s | "
+                    f"forward: {forward_time:.4f}s | "
+                    f"loss: {loss_time:.4f}s | "
+                    f"backward: {backward_time:.4f}s"
+                )
+            batch_start_time = time.time()  # reset batch start time
 
         epoch_avg_loss = epoch_avg_loss / (index + 1)
 
@@ -229,6 +313,83 @@ class Segmentation_Trainer:
         epoch_avg_loss = epoch_avg_loss / float(index + 1)
 
         return epoch_avg_loss
+    
+    def _val_step_profiled(self, use_ema: bool = False) -> float:
+        import time
+        epoch_avg_loss = 0.0
+        total_dice = 0.0
+        total_uls_metric = 0.0
+
+        self.model.eval()
+        if use_ema:
+            self.val_ema_model.eval()
+
+        with torch.no_grad():
+            batch_start_time = time.time()
+            first = True
+            for index, raw_data in enumerate(self.val_dataloader):
+                if not first:
+                    batch_start_time = time.time()
+                else:
+                    first = False
+
+                batch_time = time.time() - batch_start_time
+                self.accelerator.print(
+                    f"[info] -- gpu id: {self.accelerator.device} -- "
+                    f"val batch {index} time: {batch_time:.4f}s"
+                )
+
+                data, labels = (
+                    raw_data["image"],
+                    raw_data["label"],
+                )
+
+                forward_start = time.time()
+                if use_ema:
+                    predicted = self.ema_model.forward(data)
+                else:
+                    predicted = self.model.forward(data)
+                forward_time = time.time() - forward_start
+
+                loss_start = time.time()
+                loss = self.criterion(predicted, labels)
+                loss_time = time.time() - loss_start
+
+                if self.calculate_metrics:
+                    metric_start = time.time()
+                    mean_dice, mean_uls_metric = self._calc_dice_metric(data, labels, use_ema)
+                    metric_time = time.time() - metric_start
+                    total_dice += mean_dice
+                    total_uls_metric += mean_uls_metric
+                else:
+                    metric_time = 0.0
+
+                epoch_avg_loss += loss.item()
+
+                if self.print_every:
+                    if index % self.print_every == 0:
+                        self.accelerator.print(
+                            f"epoch: {str(self.current_epoch).zfill(4)} -- "
+                            f"val loss: {(epoch_avg_loss / (index + 1)):.5f} -- "
+                            f"lr: {self.scheduler.get_last_lr()[0]}"
+                        )
+                self.accelerator.print(
+                    f"[info] -- val batch {index} times: "
+                    f"get_batch: {batch_time:.4f}s | "
+                    f"forward: {forward_time:.4f}s | "
+                    f"loss: {loss_time:.4f}s | "
+                    f"metrics: {metric_time:.4f}s"
+                )
+
+        if use_ema:
+            self.epoch_val_ema_dice = total_dice / float(index + 1)
+        else:
+            self.epoch_val_dice = total_dice / float(index + 1)
+            self.epoch_val_uls_metric = total_uls_metric / float(index + 1)
+
+        epoch_avg_loss = epoch_avg_loss / float(index + 1)
+
+        return epoch_avg_loss
 
     def _calc_dice_metric(self, data, labels, use_ema: bool) -> float:
         """_summary_
@@ -275,6 +436,49 @@ class Segmentation_Trainer:
             # run a single validation step
             val_loss = self._val_step(use_ema=False)
             self.epoch_val_loss = val_loss
+
+            # if enabled run ema every x steps
+            self._val_ema_model()
+
+            # update metrics
+            self._update_metrics()
+
+            # log metrics
+            self._log_metrics()
+
+            # save and print
+            self._save_and_print()
+
+            # update schduler
+            self.scheduler.step()
+
+    def _run_train_val_profiled(self) -> None:
+        """_summary_"""
+
+        import time
+        # Tell wandb to watch the model and optimizer values
+        if self.accelerator.is_main_process:
+            self.wandb_tracker.run.watch(
+                self.model, self.criterion, log="all", log_freq=10, log_graph=True
+            )
+        print("[info] -- Starting training and validation with profiling")
+        # Run Training and Validation
+        for epoch in tqdm(range(self.current_epoch, self.num_epochs)):
+            # update epoch
+            self.current_epoch = epoch
+            self._update_scheduler()
+
+            # run a single training step
+            train_step_time = time.time()
+            train_loss = self._train_step_profiled()
+            self.epoch_train_loss = train_loss
+            train_step_time = time.time() - train_step_time
+
+            validate_step_time = time.time()
+            # run a single validation step
+            val_loss = self._val_step_profiled(use_ema=False)
+            self.epoch_val_loss = val_loss
+            validate_step_time = time.time() - validate_step_time
 
             # if enabled run ema every x steps
             self._val_ema_model()
@@ -559,6 +763,16 @@ class Segmentation_Trainer:
             colored("[info] -- starting evaluation", color="red")
         )
         self._run_eval()
+        self.accelerator.end_training()
+
+    def profile(self) -> None:
+        """
+        Runs a full training and validation of the dataset with profiling.
+        """
+        self.accelerator.print(
+            colored("[info] -- starting training with profiling", color="red")
+        )
+        self._run_train_val_profiled()
         self.accelerator.end_training()
 
 
