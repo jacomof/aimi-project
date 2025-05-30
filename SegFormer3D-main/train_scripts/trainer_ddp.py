@@ -317,7 +317,7 @@ class Segmentation_Trainer:
                 # get data ex: (data, target)
                 data, labels = (
                     raw_data["image"],
-                    raw_data["label"],
+                    raw_data["label"],  
                 )
                 # forward pass
                 if use_ema:
