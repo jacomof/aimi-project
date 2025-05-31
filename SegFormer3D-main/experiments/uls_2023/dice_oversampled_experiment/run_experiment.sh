@@ -9,21 +9,21 @@
 #SBATCH --error=/d/hpc/home/jf73497/logs/segformer_oversampled-%J.err
 #SBATCH --job-name="segformer preprocessing"
 #SBATCH --mem-per-gpu=64G
+#SBATCH --exclude=gwn03,gwn02
+
 
 
 # execute train CLI
 # assumes current directory is aimi-project
 
-# checking cuda visible devices
-echo $CUDA_VISIBLE_DEVICES
-# checking gpu availability
-nvidia-smi
-
 source ../../../venv_segformer/bin/activate
 
 # checking if cuda is available
-python -c "import torch; print(torch.cuda.is_available())"
+python -c "import torch; print(torch.cuda.is_available()); print(torch.version.cuda); torch.__version__"
+
+echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
+nvidia-smi
 
 echo "Environment activated!"
 echo "Running segformer training..."
-accelerate launch --config_file ./gpu_accelerate.yaml run_experiment.py 
+python run_experiment.py  

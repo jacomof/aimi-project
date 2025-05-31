@@ -1,13 +1,13 @@
 # wandb parameters
 project: uls2023
 wandb_parameters:
-  mode: "online" # set this to "online" if you want to log to wandb
+  mode: "offline" # set this to "online" if you want to log to wandb
   entity: gatonegro
   group: first_experiment
-  name: segformer3d_adamw_batch_diceloss_oversampled
+  name: segformer3d_adamw_batch_diceloss_oversample_profiled
   resume: False
   tags: ["aimilab", "dice", "b0_model", "adamw"]
-  dir: "/home/jfigueira/aimi-project/data/wandb_logs"
+  dir: "/d/hpc/projects/FRI/jf73497/aimi-project-data/wandb_logs"
 
 
 evaluate_only: False
@@ -79,12 +79,12 @@ training_parameters:
   print_every: 200
   calculate_metrics: True
   grad_accumulate_steps: 1 # default: 1
-  checkpoint_save_dir: "../../../data/uls2023_oversampled_seg/model_checkpoints/best_dice_checkpoint_continued"
+  checkpoint_save_dir: "../../../data/uls2023_oversampled_seg/model_checkpoints/best_dice_checkpoints_profiled"
   checkpoint_save_frequency: 1 
   load_checkpoint: # not implemented yet
     load_full_checkpoint: True
     load_model_only: False
-    load_checkpoint_path: "../../../data/uls2023_oversampled_seg/model_checkpoints/best_dice_checkpoint_continued/last_epoch_model"
+    load_checkpoint_path: "../../../data/uls2023_oversampled_seg/model_checkpoints/best_dice_checkpoints_profiled/last_epoch_model"
 
 # dataset args
 dataset_parameters:
@@ -110,13 +110,13 @@ dataset_parameters:
     # and put it under ../../../data/brats2017_seg and change the fold_id accrodingly
 
   train_dataloader_args:
-    batch_size: 8 
+    batch_size: 32 
     shuffle: True
-    num_workers: 6
+    num_workers: 8
     drop_last: True
 
   val_dataloader_args:
     batch_size: 8
     shuffle: False
-    num_workers: 6
+    num_workers: 8
     drop_last: False

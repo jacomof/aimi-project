@@ -30,6 +30,24 @@ def launch_experiment(config_path) -> Dict:
     Returns:
         Dict: _description_
     """
+
+    # Checking cuda availability
+    if not torch.cuda.is_available():
+        raise RuntimeError(
+            "CUDA is not available. Please check your PyTorch installation or your hardware."
+        )
+    else:
+        print("[info] -- CUDA is available. Proceeding with training.")
+
+    # Checking if the config file exists
+    # accelerator = Accelerator()
+    # print("Accelerator device:", accelerator.device)
+    # x = torch.tensor([1.0]).to(accelerator.device)
+    # print("Tensor device:", x.device)
+
+    # checking another tensor
+    y = torch.tensor([1.0]).to("cuda")
+
     # load config
     config = load_config(config_path)
 
@@ -147,7 +165,7 @@ def launch_experiment(config_path) -> Dict:
         # load trainer state
         trainer_state_dict = torch.load(
             os.path.join(config["training_parameters"]["load_checkpoint"]["load_checkpoint_path"],
-            "trainer_state_dict.pkl"),
+            "trainer_state_dict.pkl"), weights_only=False
         )
         for key, value in trainer_state_dict.items():
             if hasattr(trainer, key):
@@ -164,6 +182,8 @@ def launch_experiment(config_path) -> Dict:
         print("[info] -- Checkpoint loaded successfully.")
         print(f"[info] -- Resuming from epoch {trainer.current_epoch}.")
     print("[info] -- Setup complete.")
+
+
 
     # run train
     trainer.train()

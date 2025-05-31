@@ -5,7 +5,7 @@ wandb_parameters:
   entity: gatonegro
   group: first_experiment
   name: segformer3d_adamw_batch_diceloss_oversampled
-  resume: False
+  resume: True
   tags: ["aimilab", "dice", "b0_model", "adamw"]
   dir: "/d/hpc/projects/FRI/jf73497/aimi-project-data/wandb_logs"
 
@@ -30,7 +30,7 @@ model_parameters:
 
 # loss function
 loss_fn:
-  loss_type: "soft_dice"
+  loss_type: "dice"
   loss_args: None
 
 # optimizer
@@ -76,12 +76,13 @@ training_parameters:
   print_every: 200
   calculate_metrics: True
   grad_accumulate_steps: 1 # default: 1
-  checkpoint_save_dir: "../../../data/uls2023_oversampled_seg/model_checkpoints/best_dice_checkpoint_continued"
+  checkpoint_save_dir: "../../../data/uls2023_oversampled_seg/model_checkpoints/best_dice_checkpoint_oversampled"
   checkpoint_save_frequency: 3 
+  val_frequency: 5
   load_checkpoint: # not implemented yet
     load_full_checkpoint: True
     load_model_only: False
-    load_checkpoint_path: "../../../data/uls2023_oversampled_seg/model_checkpoints/best_dice_checkpoint_continued/last_epoch_model"
+    load_checkpoint_path: "../../../data/uls2023_oversampled_seg/model_checkpoints/best_dice_checkpoint_oversampled/last_epoch_model"
 
 # dataset args
 dataset_parameters:
@@ -109,11 +110,11 @@ dataset_parameters:
   train_dataloader_args:
     batch_size: 32 
     shuffle: True
-    num_workers: 12
+    num_workers: 8
     drop_last: True
 
   val_dataloader_args:
     batch_size: 32
     shuffle: False
-    num_workers: 12
+    num_workers: 8
     drop_last: False

@@ -3,7 +3,7 @@ import monai
 import torch.nn as nn
 from typing import Dict
 from monai import losses
-from losses.loss_fn import DC_and_BCE_loss, SoftDiceLoss
+#from losses.loss_fn import DC_and_BCE_loss, SoftDiceLoss
 
 class CrossEntropyLoss(nn.Module):
     def __init__(self):
@@ -69,7 +69,7 @@ def build_loss_fn(loss_type: str, loss_args: Dict = None):
         return DiceCELoss()
     elif loss_type == "diceBCE":
         return DC_and_BCE_loss()
-    elif loss_type == "soft_dice":
-        return SoftDiceLoss(apply_nonlin=torch.sigmoid, batch_dice=True, do_bg=False, ddp=False)
+    # elif loss_type == "soft_dice":
+    #     return SoftDiceLoss(apply_nonlin=torch.sigmoid, batch_dice=True, do_bg=False, ddp=False)
     else:
         raise ValueError("must be cross entropy or soft dice loss for now!")

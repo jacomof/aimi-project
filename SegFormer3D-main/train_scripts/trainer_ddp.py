@@ -185,14 +185,17 @@ class Segmentation_Trainer:
         # self.train_dataloader.sampler.set_epoch(self.current_epoch)
         batch_start_time = time.time()
         first = True
-        for index, raw_data in enumerate(self.train_dataloader):
+        for index, raw_data in enumerate(tqdm(self.train_dataloader)):
 
             batch_time = time.time() - batch_start_time
 
             # add in gradient accumulation
             # TODO: test gradient accumulation
             with self.accelerator.accumulate(self.model):
-
+                print(
+                    f"[info] -- gpu id: {self.accelerator.device} -- "
+                    f"batch {index} time: {batch_time:.4f}s"
+                )
                 # get data ex: (data, target)
                 data, labels = (
                     raw_data["image"],
@@ -208,8 +211,14 @@ class Segmentation_Trainer:
                 predicted = self.model.forward(data)
                 forward_time = time.time() - forward_start
 
+                print(
+                    f"[info] -- gpu id: {self.accelerator.device} -- "
+                    f"batch {index} forward time: {forward_time:.4f}s"
+                )
+
                 # calculate loss
                 loss_start = time.time()
+                print(f"predicted shape: {predicted.shape}, labels shape: {labels.shape}")
                 loss = self.criterion(predicted, labels)
                 loss_time = time.time() - loss_start
 
@@ -218,7 +227,7 @@ class Segmentation_Trainer:
                 self.accelerator.backward(loss)
                 backward_time = time.time() - backward_start
 
-                self.accelerator.print(
+                print(
                     f"[info] -- gpu id: {self.accelerator.device} -- "
                     f"batch {index} times: "
                     f"data: {batch_time:.4f}s | "
@@ -244,13 +253,14 @@ class Segmentation_Trainer:
                             f"train loss: {(epoch_avg_loss / (index + 1)):.5f} -- "
                             f"lr: {self.scheduler.get_last_lr()[0]}"
                         )
-                self.accelerator.print(
+                print(
                     f"[info] -- batch {index} times: "
                     f"get_batch: {batch_time:.4f}s | "
                     f"forward: {forward_time:.4f}s | "
                     f"loss: {loss_time:.4f}s | "
                     f"backward: {backward_time:.4f}s"
                 )
+                sys.stdout.flush()
             batch_start_time = time.time()  # reset batch start time
 
         epoch_avg_loss = epoch_avg_loss / (index + 1)
@@ -327,14 +337,14 @@ class Segmentation_Trainer:
         with torch.no_grad():
             batch_start_time = time.time()
             first = True
-            for index, raw_data in enumerate(self.val_dataloader):
+            for index, raw_data in enumerate(tqdm(self.val_dataloader)):
                 if not first:
                     batch_start_time = time.time()
                 else:
                     first = False
 
                 batch_time = time.time() - batch_start_time
-                self.accelerator.print(
+                print(
                     f"[info] -- gpu id: {self.accelerator.device} -- "
                     f"val batch {index} time: {batch_time:.4f}s"
                 )
@@ -373,13 +383,14 @@ class Segmentation_Trainer:
                             f"val loss: {(epoch_avg_loss / (index + 1)):.5f} -- "
                             f"lr: {self.scheduler.get_last_lr()[0]}"
                         )
-                self.accelerator.print(
+                print(
                     f"[info] -- val batch {index} times: "
                     f"get_batch: {batch_time:.4f}s | "
                     f"forward: {forward_time:.4f}s | "
                     f"loss: {loss_time:.4f}s | "
                     f"metrics: {metric_time:.4f}s"
                 )
+                sys.stdout.flush()
 
         if use_ema:
             self.epoch_val_ema_dice = total_dice / float(index + 1)
@@ -437,17 +448,19 @@ class Segmentation_Trainer:
             val_loss = self._val_step(use_ema=False)
             self.epoch_val_loss = val_loss
 
-            # if enabled run ema every x steps
-            self._val_ema_model()
 
-            # update metrics
-            self._update_metrics()
+            if self.current_epoch % self.checkpoint_save_frequency == 0 and self.current_epoch != 0:  
+                # if enabled run ema every x steps
+                self._val_ema_model()
 
-            # log metrics
-            self._log_metrics()
+                # update metrics
+                self._update_metrics()
 
-            # save and print
-            self._save_and_print()
+                # log metrics
+                self._log_metrics()
+
+                # save and print
+                self._save_and_print()
 
             # update schduler
             self.scheduler.step()
@@ -480,17 +493,18 @@ class Segmentation_Trainer:
             self.epoch_val_loss = val_loss
             validate_step_time = time.time() - validate_step_time
 
-            # if enabled run ema every x steps
-            self._val_ema_model()
+            if self.current_epoch % self.checkpoint_save_frequency == 0 and self.current_epoch != 0:  
+                # if enabled run ema every x steps
+                self._val_ema_model()
 
-            # update metrics
-            self._update_metrics()
+                # update metrics
+                self._update_metrics()
 
-            # log metrics
-            self._log_metrics()
+                # log metrics
+                self._log_metrics()
 
-            # save and print
-            self._save_and_print()
+                # save and print
+                self._save_and_print()
 
             # update schduler
             self.scheduler.step()
@@ -654,14 +668,13 @@ class Segmentation_Trainer:
             )
 
         # Save the last epoch model for further training
-        if self.current_epoch % self.checkpoint_save_frequency == 0:
-            print(f"[info] -- update last model this epoch according to frequency: {self.current_epoch%self.checkpoint_save_frequency == 0}")
-            self.accelerator.print("[info] -- saving last epoch model")
-            save_path = os.path.join(
-                self.checkpoint_save_dir,
-                "last_epoch_model",
-            )
-            self._save_checkpoint(save_path)
+        print(f"[info] -- update last model this epoch according to frequency: {self.current_epoch%self.checkpoint_save_frequency == 0}")
+        self.accelerator.print("[info] -- saving last epoch model")
+        save_path = os.path.join(
+            self.checkpoint_save_dir,
+            "last_epoch_model",
+        )
+        self._save_checkpoint(save_path)
 
     def _save_checkpoint(self, filename: str) -> None:
         """_summary_

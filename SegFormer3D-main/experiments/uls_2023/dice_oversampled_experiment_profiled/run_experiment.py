@@ -165,6 +165,8 @@ def launch_experiment(config_path) -> Dict:
         print(f"[info] -- Resuming from epoch {trainer.current_epoch}.")
     print("[info] -- Setup complete.")
 
+    print("[info] -- Cuda available:", torch.cuda.is_available())
+
     # run train
     if config["profile"]:
         print("[info] -- Profiling enabled. Running in profiling mode.")
@@ -209,7 +211,7 @@ def load_config(config_path: str) -> Dict:
 def build_directories(config: Dict) -> None:
 
 
-    # if os.listdir(config["training_parameters"]["checkpoint_save_dir"]) and \
+    # if os.path.exists(config["training_parameters"]["checkpoint_save_dir"]) and \
     #     not config["training_parameters"]["load_checkpoint"]["load_full_checkpoint"]:
     #     raise ValueError("checkpoint exits -- preventing file override -- rename file")
     # create necessary directories

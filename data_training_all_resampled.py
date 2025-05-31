@@ -115,7 +115,7 @@ if __name__ == "__main__":
     # convert_to_mixed_dataset(source_root, target_root, split_percent=0.0)
 
     #print("Running nnUNetv2_plan_and_preprocess...")
-    # subprocess.run(["nnUNetv2_plan_and_preprocess", "-d", dataset_id, "-c", "3d_fullres", "-pl", "nnUNetPlannerResEncM"], check=True)
+    subprocess.run(["nnUNetv2_plan_and_preprocess", "-d", dataset_id, "-c", "3d_fullres", "-pl", "nnUNetPlannerResEncM"], check=True)
     # print("Running nnUNetv2 training...")
-    train_on_single_gpu(dataset_id, trainer)
+    #train_on_single_gpu(dataset_id, trainer)
 

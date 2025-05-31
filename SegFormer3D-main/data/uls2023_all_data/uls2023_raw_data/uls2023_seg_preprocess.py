@@ -142,6 +142,18 @@ class ULS2023Preprocess:
         )
         return modality_fp
 
+    # def load_nifti(self, fp):
+    #     """
+    #     load a nifti file
+    #     fp: path to the nifti file with (nii or nii.gz) extension
+    #     """
+    #     nifti_data = nibabel.load(fp)
+    #     # get the floating point array
+    #     nifti_scan = nifti_data.get_fdata()
+    #     # get affine matrix
+    #     affine = nifti_data.affine
+    #     return nifti_scan, affine
+    
     def load_nifti(self, fp):
         """
         load a nifti file
@@ -152,7 +164,9 @@ class ULS2023Preprocess:
         nifti_scan = nifti_data.get_fdata()
         # get affine matrix
         affine = nifti_data.affine
-        return nifti_scan, affine
+
+        spacings = nifti_data.header.get_zooms()
+        return nifti_scan, affine, spacings
 
     def _2metaTensor(self, nifti_data: np.ndarray, affine_mat: np.ndarray):
         """
@@ -173,7 +187,7 @@ class ULS2023Preprocess:
         apply preprocess stage to the modality
         data_fp: directory to the modality
         """
-        data, affine = self.load_nifti(data_fp)
+        data, affine, spacings = self.load_nifti(data_fp)
 
         # First orient data, because adding new dimensions before makes affine and data incompatible 
         data = MetaTensor(x=data, affine=affine)
@@ -198,7 +212,7 @@ class ULS2023Preprocess:
         # images have already been cropped
         #data = self.crop_brats2021_zero_pixels(data)
 
-        return data
+        return data, spacings
 
     def __getitem__(self, idx):
         # Example: MIX_00001_0000.nii.gz
@@ -209,14 +223,14 @@ class ULS2023Preprocess:
         case_path = self.get_fp(case_name, "imagesTr", mri_code='0000')
         
         # preprocess image
-        im = self.preprocess_uls(case_path, is_label=False)
+        im, im_spacings = self.preprocess_uls(case_path, is_label=False)
         # print("Preprocessed image shape: ", im.shape)
         im_transv = im.swapaxes(1, 3) # transverse plane
         # print("Preprocessed image shape after swapaxes: ", im_transv.shape)
 
         # preprocess segmentation label
         label = self.get_fp(case_name, "labelsTr")
-        label = self.preprocess_uls(label, is_label=True)
+        label, label_spacings = self.preprocess_uls(label, is_label=True)
         # print("Preprocessed label shape: ", label.shape)
         label = label.swapaxes(1, 3) # transverse plane 
         # print("Preprocessed label shape after swapaxes: ", label.shape)
@@ -224,7 +238,7 @@ class ULS2023Preprocess:
         # add channel dimension (1, D, H, W)
         # im = im_transv.unsqueeze(0)
     
-        return im_transv, label, case_name
+        return im_transv, label, case_name, label_spacings
 
 
     def __call__(self):
@@ -238,15 +252,19 @@ class ULS2023Preprocess:
         print("finished preprocessing ULS2023...")
 
     def process(self, idx):
-        tensor, label, case_name = self.__getitem__(idx)
+        tensor, label, case_name, label_spacings = self.__getitem__(idx)
+        
         # creating the folder for the current case id
         data_save_path = os.path.join(self.save_dir, case_name)
         if not os.path.exists(data_save_path):
             os.makedirs(data_save_path)
+        
         tensor_fn = data_save_path + f"/{case_name}_im.pt"
         label_fn = data_save_path + f"/{case_name}_label.pt"
+        label_spacings_fn = data_save_path + f"/{case_name}_label_spacings.pt"
         torch.save(tensor, tensor_fn)
         torch.save(label, label_fn)
+        torch.save(label_spacings, label_spacings_fn)
 
 
 
@@ -310,9 +328,9 @@ if __name__ == "__main__":
         )
 
     uls2023_prep = ULS2023Preprocess(
-        root_dir="/d/hpc/home/jf73497/projects/aimi-project-data/raw/",
+        root_dir="/d/hpc/home/jf73497/projects/aimi-project-data/raw_complete/",
     	train_folder_name = "Dataset001_MIX/",
-        save_dir="../ULS2023_Training_Data",
+        save_dir="../ULS2023_Training_Data_Complete",
         cpu_count=args.cpu_count
     )
     # run the preprocessing pipeline 
