@@ -3,6 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+
+SegFormer3D-main/data/local_data/
+SegFormer3D-main/data/uls2023_seg/ULS2023_Training_Data
+SegFormer3D-main/data/uls2023_seg/ULS2023_Training_Data_Oversampling
+SegFormer3D-main/data/uls2023_seg/model_checkpoints
+
 # Dont save lighnting logs
 version_*
 
