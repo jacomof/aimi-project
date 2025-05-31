@@ -16,17 +16,18 @@
 # ---------------------------------------------
 
 ### notes
-# this experiment launches training on all the dataset without
-# ensembling or resampling.
+# this experiment launches training on all the dataset with
+# resampling and no ensembling.
 # It assumes preprocessed data is already available in the
-# preprocessed_complete directory.
+# preprocessed_oversampled_complete directory.
+# assumes current directory is aimi-project.
 
-# execute train CLI
-# assumes current directory is aimi-project
-export nnUNet_raw="/d/hpc/home/jf73497/projects/aimi-project-data/raw/"
-export nnUNet_preprocessed="/d/hpc/home/jf73497/projects/aimi-project-data/preprocessed_complete/"
-export nnUNet_results="/d/hpc/home/jf73497/projects/aimi-project-data/complete_data/"
+# raw_complete should have all data in imagesTr and labelsTr
+# and no data in imagesTs and labelsTs
+export nnUNet_raw="../aimi-project-data/raw/"
+export nnUNet_preprocessed="../aimi-project-data/preprocessed_oversampled_complete/"
+export nnUNet_results="../aimi-project-data/complete_data/"
 source venv/bin/activate
 echo "Environment activated"
 echo "Launching training"
-nnUNetv2_train 001 3d_fullres all --npz --c -tr nnUNetTrainer_ULS_800_QuarterLR -p nnUNetResEncUNetMPlans
+nnUNetv2_train 002 3d_fullres all --npz --c -tr nnUNetTrainer_ULS_800_QuarterLR -p nnUNetResEncUNetMPlans

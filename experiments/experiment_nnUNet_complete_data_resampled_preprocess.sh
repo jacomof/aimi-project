@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# ADAPT TO YOUR USE CASE IF YOU ARE USING SLURM
+# ---------------------------------------------
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=32
@@ -10,12 +13,19 @@
 #SBATCH --job-name="nnUNet training with all training data"
 #SBATCH --mem-per-gpu=64G
 #SBATCH --exclude=wn224,wn208,wn209,wn210,wn211,wn212,gwn04,wn222
+# ---------------------------------------------
 
 ### notes
-# this experiment is meant to try out ResNet 18, 34, 50 and 101 on cifar10
+# Runs preprocessing for nnUNet on the oversampled complete dataset.
+# Run before running experiment_nnUNet_complete_data.sh.
+# It assumes the raw data is already available in the
+# raw_complete directory. This directory should contain
+# all images inimagesTr and labelsTr for training, 
+# and imagesTs and labelsTs should be left empty. 
+# The preprocessed data will be saved in the
+# preprocessed_complete directory.
 
 
-# execute train CLI
 # assumes current directory is aimi-project
 export nnUNet_raw="/d/hpc/home/jf73497/projects/aimi-project-data/raw_oversampled_complete/"
 export nnUNet_preprocessed="/d/hpc/home/jf73497/projects/aimi-project-data/preprocessed_oversampled_complete/"

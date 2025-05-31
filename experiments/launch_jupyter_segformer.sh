@@ -21,5 +21,7 @@
 # It assumes the current directory is aimi-project.
 
 
-source venv/bin/activate
+source src/segformer3duls/venv_segformer/bin/activate
+echo "Environment activated"
+echo "Launching Jupyter Lab"
 jupyter lab --ip=0.0.0.0 --port 1200

@@ -2,4 +2,5 @@ jupyterlab
 torch --index-url https://download.pytorch.org/whl/cu118
 torchvision --index-url https://download.pytorch.org/whl/cu118
 torchaudio --index-url https://download.pytorch.org/whl/cu118
+termcolor
 -e /d/hpc/home/jf73497/projects/nnUNet
