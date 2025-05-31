@@ -45,7 +45,7 @@ threadpoolctl==3.6.0
 torch==2.5.1
 torchaudio==2.7.0+cu118
 torchmetrics==1.7.1
-torchvision==0.22.0+cu118
+torchvision==0.22.0
 tqdm==4.67.1
 typing_extensions==4.12.2
 tzdata==2025.2
@@ -61,3 +61,6 @@ batchgenerators==0.23
 blosc2==2.5.1
 acvl_utils==0.2
 jupyterlab==4.4.2
+termcolor
+accelerate
+monai
