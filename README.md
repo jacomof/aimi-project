@@ -84,16 +84,20 @@ Use the requirements_nnunet.txt file to install relevant packages.
 
 Require custom adaptations for handling arbitrarily sized 3D patches.
 
-The transformer model has its own architecture defined under src/segformer3duls/, and performance depends on proper data normalization (e.g., MinMax scaling).
+The transformer model has its own architecture defined under src/segformer3duls/, and performance depends on proper data normalization (e.g., MinMax scaling). Adaptations 
+to custom data shapes require setting the correct strides for the patch embedding layers
+on model_parameters -> patch_stride_xy and model_parametes -> patch_stride_z on the experiment configuration files. For new experiments we recommend copying the base 
+uls_2023 -> dice_experiment on the experiments folder and adapting config and experiment
+runner script (run_experiment.py) as needed.
 
 ### Jupyter Notebooks:
 
-Should be run in environments in appropriate enviroments, if you run either nnUNet or SegFormer.
+Should be run in environments in appropriate enviroments, if you run either nnUNet or SegFormer. Some notebooks require adjusting the path of configs, data or models.
 
 Notebooks like prediction_label_viz.ipynb and test_time_aug.ipynb assume that pretrained models have been saved to the appropriate experiments/ subdirectory.
 
 # IMPORTANT:
-Prepare datasets in the format expected by nnUNet and SegFormer (NIfTI or .npz format depending on pipeline). The raw data thus has to be preprocessed either with scripts we wrote or with scripts from the respective models.
+Prepare datasets in the format expected by nnUNet and SegFormer (NIfTI or .npz format depending on pipeline and respecting their respective file structure standards). The raw data thus has to be preprocessed either with scripts we wrote or with scripts from the respective models.
 
 Most vizualizations are present in notebooks in this repository.
 
