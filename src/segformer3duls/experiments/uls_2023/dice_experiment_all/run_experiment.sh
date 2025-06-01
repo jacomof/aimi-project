@@ -11,7 +11,7 @@
 #SBATCH --error=/d/hpc/home/jf73497/logs/segformer-%J.err
 #SBATCH --job-name="segformer preprocessing"
 #SBATCH --mem-per-gpu=64G
-#SBATCH --exclude=gwn03,gwn02,gwn08,wn205,gwn09
+#SBATCH --exclude=gwn03,gwn02,gwn08,wn205
 
 # notes:
 # Assumes current directory is aimi-project.

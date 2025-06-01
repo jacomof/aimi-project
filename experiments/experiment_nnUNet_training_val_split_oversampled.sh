@@ -17,11 +17,10 @@
 
 
 ### notes
-# This experiment launches training on all the training split
-# by merging validation and training data.
-# It uses no ensembling or oversampling. 
+# This experiment launches training on the training split.
+# It uses no ensembling, and uses oversampling. 
 # It assumes preprocessed data is already available in the
-# preprocessed directory.
+# preprocessed_oversampled directory.
 # Assumes current directory is aimi-project.
 
 # assumes current directory is aimi-project
@@ -31,4 +30,4 @@ export nnUNet_results="../aimi-project-data/"
 source venv/bin/activate
 echo "Environment activated"
 echo "Launching training"
-nnUNetv2_plan_and_preprocess 002 3d_fullres 0 --npz --c -tr nnUNetTrainer_ULS_400_QuarterLR -pl nnUNetResEncUNetMPlans
+nnUNetv2_train 002 3d_fullres 0 --npz --c -tr nnUNetTrainer_ULS_400_QuarterLR -p nnUNetResEncUNetMPlans

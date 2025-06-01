@@ -201,3 +201,5 @@ test/architecture/input/images/stacked-3d-ct-lesion-volumes/stacked_voi_sample.m
 venv
 venv_segformer
 ULS2023_Training_Data
+src/segformer3duls/data/uls2023_seg_test/uls2023_raw_data/train/imagesTr
+src/segformer3duls/data/uls2023_seg_test/uls2023_raw_data/train/labelsTr

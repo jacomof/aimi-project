@@ -15,7 +15,9 @@
 # ---------------------------------------------
 
 
-# execute train CLI
+# Notes:
+# This is a utility script  to find the best configuration for nnUNet
+# in a SLURM cluster.
 # assumes current directory is aimi-project
 
 # Select correct preprocessed data directory and nnUNet results

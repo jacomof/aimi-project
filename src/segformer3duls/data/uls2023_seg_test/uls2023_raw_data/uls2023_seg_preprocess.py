@@ -328,8 +328,8 @@ if __name__ == "__main__":
         )
 
     uls2023_prep = ULS2023Preprocess(
-        root_dir="/d/hpc/home/jf73497/projects/aimi-project-data/raw/",
-    	train_folder_name = "Dataset001_MIX/",
+        root_dir="./",
+    	train_folder_name = "train/",
         save_dir="../ULS2023_Training_Data",
         cpu_count=args.cpu_count
     )

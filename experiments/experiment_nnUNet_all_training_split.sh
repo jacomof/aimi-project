@@ -17,7 +17,7 @@
 
 
 ### notes
-# This experiment launches training on all the training split
+# This experiment launches training on the combined training split
 # by merging validation and training data.
 # It uses no ensembling or oversampling. 
 # It assumes preprocessed data is already available in the

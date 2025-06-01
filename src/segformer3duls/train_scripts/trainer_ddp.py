@@ -11,8 +11,6 @@ from metrics.segmentation_metrics import SlidingWindowInference
 import kornia
 import sys
 
-from tta_aug.tta_augmentations import test_time_augmentation
-
 
 #################################################################################################
 class Segmentation_Trainer:

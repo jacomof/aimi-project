@@ -39,12 +39,6 @@ def launch_experiment(config_path) -> Dict:
     else:
         print("[info] -- CUDA is available. Proceeding with training.")
 
-    # Checking if the config file exists
-    # accelerator = Accelerator()
-    # print("Accelerator device:", accelerator.device)
-    # x = torch.tensor([1.0]).to(accelerator.device)
-    # print("Tensor device:", x.device)
-
     # checking another tensor
     y = torch.tensor([1.0]).to("cuda")
 

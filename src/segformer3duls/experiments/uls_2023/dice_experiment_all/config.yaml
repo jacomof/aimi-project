@@ -1,16 +1,14 @@
 # wandb parameters
 project: uls2023
 wandb_parameters:
-  mode: "offline" # set this to "online" if you want to log to wandb
+  mode: "online" # set this to "online" if you want to log to wandb
   entity: gatonegro
   group: first_experiment
-  name: segformer3d_adamw_batch8_diceCEloss_continued
-  resume: False
+  name: segformer3d_adamw_batch_diceloss_all_train
+  resume: True
   tags: ["aimilab", "dice", "b0_model", "adamw"]
   dir: "/d/hpc/projects/FRI/jf73497/aimi-project-data/wandb_logs"
 
-
-evaluate_only: True
 
 # input size -> 64, 128, 128
 # model parameters
@@ -32,14 +30,14 @@ model_parameters:
 
 # loss function
 loss_fn:
-  loss_type: "diceCE"
+  loss_type: "dice"
   loss_args: None
 
 # optimizer
 optimizer:
   optimizer_type: "adamw"
   optimizer_args:
-    lr: 0.0008 # base lr: 0.0001
+    lr: 0.0032 # base lr: 0.0001
     weight_decay: 0.01
 
 # schedulers
@@ -78,19 +76,18 @@ training_parameters:
   print_every: 200
   calculate_metrics: True
   grad_accumulate_steps: 1 # default: 1
-  checkpoint_save_dir: "../../../data/uls2023_oversampled_seg/model_checkpoints/best_dice_checkpoint_oversampled_tta/"
-  checkpoint_save_frequency: 3 
+  checkpoint_save_dir: "../../../data/uls2023_all_data/model_checkpoints/best_dice_checkpoint_continued"
+  checkpoint_save_frequency: 15 
   load_checkpoint: # not implemented yet
-    load_full_checkpoint: True
+    load_full_checkpoint: False
     load_model_only: False
-    load_checkpoint_path: "/d/hpc/home/jf73497/projects/aimi-project/src/segformer3duls/data/uls2023_seg/model_checkpoints/best_dice_checkpoint_continued_original"
-  
+    load_checkpoint_path: "../../../data/uls2023_all_data/model_checkpoints/best_dice_checkpoint_continued/last_epoch_model"
 
 # dataset args
 dataset_parameters:
   dataset_type: "uls2023_seg"
   train_dataset_args:
-    root: "../../../data/uls2023_oversampled_seg"
+    root: "../../../data/uls2023_all_data"
     train: True
     # in case you have k-fold train and validation csv 
     fold_id: null
@@ -100,7 +97,7 @@ dataset_parameters:
     # and put it under ../../../data/brats2017_seg and change the fold_id accrodingly
 
   val_dataset_args:
-    root: "../../../data/uls2023_seg_test"
+    root: "../../../data/uls2023_all_data"
     train: False
     # in case you have k-fold train and validation csv
     fold_id: null
@@ -110,13 +107,13 @@ dataset_parameters:
     # and put it under ../../../data/brats2017_seg and change the fold_id accrodingly
 
   train_dataloader_args:
-    batch_size: 8 
+    batch_size: 32 
     shuffle: True
     num_workers: 6
     drop_last: True
 
   val_dataloader_args:
-    batch_size: 1
+    batch_size: 32
     shuffle: False
-    num_workers: False
+    num_workers: 6
     drop_last: False

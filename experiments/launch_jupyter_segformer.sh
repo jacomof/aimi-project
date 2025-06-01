@@ -15,8 +15,8 @@
 #SBATCH --exclude=gwn03,gwn02
 # ---------------------------------------------
 
-# This is a utility script to launch a Jupyter Lab server 
-# for interactive work.
+# This is a utility script to launch a Jupyter Lab server with 
+# the SegFormer3DULS environment for interactive work.
 # Very useful for debugging and development!
 # It assumes the current directory is aimi-project.
 

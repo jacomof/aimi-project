@@ -8,11 +8,11 @@
 #SBATCH --gpus=1
 #SBATCH --partition=gpu
 #SBATCH --time=24:00:00
-#SBATCH --output=/d/hpc/home/jf73497/logs/launch_jupyter-%J.out
-#SBATCH --error=/d/hpc/home/jf73497/logs/launch_jupyter-%J.err
-#SBATCH --job-name="nnUNet training"
+#SBATCH --output=/d/hpc/home/jf73497/logs/launch_jupyter_normal-%J.out
+#SBATCH --error=/d/hpc/home/jf73497/logs/launch_jupyter_normal-%J.err
+#SBATCH --job-name="jupyter"
 #SBATCH --mem-per-gpu=32G
-#SBATCH --exclude=gwn03,gwn02
+#SBATCH --exclude=gwn03,gwn02,wn207,wn219
 # ---------------------------------------------
 
 # This is a utility script to launch a Jupyter Lab server 
@@ -22,4 +22,5 @@
 
 
 source venv/bin/activate
+echo "Environment activated!"
 jupyter lab --ip=0.0.0.0 --port 1200

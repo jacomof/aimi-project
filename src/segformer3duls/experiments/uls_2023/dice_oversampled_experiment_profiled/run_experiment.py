@@ -147,7 +147,9 @@ def launch_experiment(config_path) -> Dict:
         # load trainer state
         trainer_state_dict = torch.load(
             os.path.join(config["training_parameters"]["load_checkpoint"]["load_checkpoint_path"],
-            "trainer_state_dict.pkl"),
+            "trainer_state_dict.pkl",
+            ),
+            weights_only=False
         )
         for key, value in trainer_state_dict.items():
             if hasattr(trainer, key):

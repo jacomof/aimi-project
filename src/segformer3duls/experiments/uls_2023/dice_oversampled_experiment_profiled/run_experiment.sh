@@ -9,6 +9,7 @@
 #SBATCH --error=/d/hpc/home/jf73497/logs/segformer_oversampled_profiled-%J.err
 #SBATCH --job-name="segformer preprocessing"
 #SBATCH --mem-per-gpu=64G
+#SBATCH --exclude=gwn03,gwn02
 
 
 # execute train CLI
