@@ -8,6 +8,15 @@ from batchgenerators.utilities.file_and_folder_operations import maybe_mkdir_p
 from nnunetv2.dataset_conversion.generate_dataset_json import generate_dataset_json
 
 def convert_to_mixed_dataset(source_root: str, target_root: str, split_percent: float = 0.2):
+    """ Convert multiple datasets of the ULS2023 challenge into a single mixed dataset.
+    This function merges multiple datasets from the source root into a single dataset in the target root.
+
+    Args:
+        source_root (str): Path to the root directory containing the source datasets.
+        target_root (str): Path to the root directory where the mixed dataset will be saved.
+        split_percent (float): Percentage of data to be used for testing. Default is 0.2 (20%).
+    """
+    
     target_dataset_name = "Dataset001_MIX"
     target_dataset_folder = os.path.join(target_root, target_dataset_name)
     tgt_imagesTr = os.path.join(target_dataset_folder, "imagesTr")
@@ -81,11 +90,21 @@ def convert_to_mixed_dataset(source_root: str, target_root: str, split_percent: 
         converted_by="Mauro",
     )
 
-def train_on_single_gpu(dataset_id: str, trainer_name: str):
+def train_on_single_gpu(dataset_id: str, trainer_name: str, folds: int = 5):
+    """ Train the nnUNet model on a single GPU.
+
+    This function sets up the training environment and runs the training command for the specified dataset and trainer.
+    It can train multiple folds of the dataset for the specified modality by changing
+    the .
+    
+    Args:
+        dataset_id (str): The ID of the dataset to train on.
+        trainer_name (str): The name of the trainer to use for training.
+    """
     modalities = ["3d_fullres"]
     print("Starting training... ")
     for modality in modalities:
-        for fold in range(1):
+        for fold in range(folds):
             cmd = [
                 "CUDA_VISIBLE_DEVICES=0",
                 "nnUNetv2_train",
@@ -109,15 +128,14 @@ def train_on_single_gpu(dataset_id: str, trainer_name: str):
 
 if __name__ == "__main__":
     trainer = "nnUNetTrainer_ULS_400_QuarterLR"
-    source_root = "../aimi-project-data/data/fully_annotated_data_copy"
-    target_root = "../aimi-project-data/data/raw_oversampled_mauro/"
+    source_root = "../../../aimi-project-data/data/fully_annotated_data_copy"
+    target_root = "../../../aimi-project-data/data/raw_oversampled_mauro/"
     dataset_id = "002"
 
-    # convert_to_mixed_dataset(source_root, target_root, split_percent=0.0)
+    convert_to_mixed_dataset(source_root, target_root, split_percent=0.0)
 
     print("Running nnUNetv2_plan_and_preprocess...")
     subprocess.run(["nnUNetv2_plan_and_preprocess", "-d", dataset_id, "-c", "3d_fullres", "-pl", "nnUNetPlannerResEncM"], check=True)
-    # subprocess.run(["nnUNetv2_plan_experiment", "-d", dataset_id, "-pl", "nnUNetPlannerResEncM"], check=True)
     print("Running nnUNetv2 training...")
     train_on_single_gpu(dataset_id, trainer)
 

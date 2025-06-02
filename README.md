@@ -86,15 +86,20 @@ Require custom adaptations for handling arbitrarily sized 3D patches.
 
 The transformer model has its own architecture defined under src/segformer3duls/, and performance depends on proper data normalization (e.g., MinMax scaling). Adaptations 
 to custom data shapes require setting the correct strides for the patch embedding layers
-on model_parameters -> patch_stride_xy and model_parametes -> patch_stride_z on the experiment configuration files. For new experiments we recommend copying the base 
-uls_2023 -> dice_experiment on the experiments folder and adapting config and experiment
-runner script (run_experiment.py) as needed.
+on model_parameters -> patch_stride_xy and model_parametes -> patch_stride_z on the experiment configuration files. For new experiments we recommend copying the template experiment on src -> segformer3duls -> uls_2023 -> template_experiment and adapting config and experiment runner script (run_experiment.py) as needed.
 
 ### Jupyter Notebooks:
 
 Should be run in environments in appropriate enviroments, if you run either nnUNet or SegFormer. Some notebooks require adjusting the path of configs, data or models.
 
 Notebooks like prediction_label_viz.ipynb and test_time_aug.ipynb assume that pretrained models have been saved to the appropriate experiments/ subdirectory.
+
+### Logging:
+
+SegFormer3D is set-up to log results to Weights & Biases, adjust config files with 
+correct project, group and experiment parameters. To turn-off logging, set wandb_parameters -> mode to "offline".
+
+The UNet baseline training script is implemented with PL and uses a tensorflow logger, use this tool to visualize its results.
 
 # IMPORTANT:
 Prepare datasets in the format expected by nnUNet and SegFormer (NIfTI or .npz format depending on pipeline and respecting their respective file structure standards). The raw data thus has to be preprocessed either with scripts we wrote or with scripts from the respective models.
@@ -103,15 +108,7 @@ Most vizualizations are present in notebooks in this repository.
 
 Always verify CUDA compatibility for the installed PyTorch version in your environment.
 
-Use symbolic links or custom configs in scripts/prepare_cluster.sh to point to datasets on remote clusters.
+If running on Slurm cluster, helpful scripts can be found on scripts/ to prepare virtual environments and sync them to different nodes. All credit for these scripts go to the Science cluster administrator of the Radboud Faculty of Science.
 
 # License
 This project is licensed under the MIT License.
-
-
-To visualize these logs using TensorBoard, run:
-```
-tensorboard --logdir_spec=./logs
-```
-
-Then open the provided URL (usually http://localhost:6006) in your browser to view training progress, metrics, and more.

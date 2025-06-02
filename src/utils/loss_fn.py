@@ -10,7 +10,7 @@ def print_if_rank0(*args):
 
 
 class AllGatherGrad(torch.autograd.Function):
-    # stolen from pytorch lightning
+    # from pytorch lightning
     @staticmethod
     def forward(
         ctx: Any,

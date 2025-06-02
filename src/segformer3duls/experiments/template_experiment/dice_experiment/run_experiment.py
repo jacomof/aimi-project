@@ -39,7 +39,7 @@ def launch_experiment(config_path) -> Dict:
     else:
         print("[info] -- CUDA is available. Proceeding with training.")
 
-    # checking another tensor
+    # checking tensor to see if GPU is actually free
     y = torch.tensor([1.0]).to("cuda")
 
     # load config
@@ -159,7 +159,7 @@ def launch_experiment(config_path) -> Dict:
         # load trainer state
         trainer_state_dict = torch.load(
             os.path.join(config["training_parameters"]["load_checkpoint"]["load_checkpoint_path"],
-            "trainer_state_dict.pkl"), weights_only=False
+            "trainer_state_dict.pkl"),
         )
         for key, value in trainer_state_dict.items():
             if hasattr(trainer, key):
@@ -173,11 +173,7 @@ def launch_experiment(config_path) -> Dict:
         else:
             trainer.scheduler = storage["warmup_scheduler"]
 
-        print("[info] -- Checkpoint loaded successfully.")
-        print(f"[info] -- Resuming from epoch {trainer.current_epoch}.")
     print("[info] -- Setup complete.")
-
-
 
     # run train
     trainer.train()
@@ -229,8 +225,6 @@ def build_directories(config: Dict) -> None:
     )
     if not os.path.exists(last_model_dir):
         os.makedirs(last_model_dir)
-
-
 
 
 ##################################################################################################
