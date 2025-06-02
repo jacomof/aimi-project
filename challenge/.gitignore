@@ -1,0 +1,13 @@
+architecture/input/images/stacked-3d-ct-lesion-volumes/stacked_voi_sample.mha
+nnUNet_results
+architecture/input/images/stacked-3d-ct-lesion-volumes/stacked_voi_sample.mha
+algorithmmodel.tar.gz
+*.mha
+nnUNet3DEnsemble*
+nnunet_one_fold_800_epochs.tar.gz
+all_data_checkpoint_segformer
+segformer_venv
+*venv*
+tmp*
+*.tar.gz
+*.pyc
