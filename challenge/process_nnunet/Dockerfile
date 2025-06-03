@@ -25,7 +25,9 @@ RUN wget https://bootstrap.pypa.io/get-pip.py && python3.10 get-pip.py && rm get
 
 # Upgrade pip
 RUN python3.10 -m pip install --no-cache-dir --upgrade pip
-COPY process_nnunet/requirements_nnunet.txt /tmp/requirements.txt
+
+
+COPY challenge/process_nnunet/requirements_nnunet.txt /tmp/requirements.txt
 RUN python3.10 -m pip install --no-cache-dir -r /tmp/requirements.txt -f https://download.pytorch.org/whl/torch_stable.html
 
 # Configure Git, clone the repository without checking out, then checkout the specific commit
@@ -55,19 +57,19 @@ WORKDIR /opt/app
 
 ENV PATH="/home/user/.local/bin:${PATH}"
 
-COPY --chown=user:user process_nnunet/process_flexible.py /opt/app/
-COPY --chown=user:user ./export2onnx.py /opt/app/
+COPY --chown=user:user challenge/process_nnunet/process_flexible.py /opt/app/
+COPY --chown=user:user challenge/export2onnx.py /opt/app/
 
 ### ALGORITHM
 
 # Copy custom trainers to docker
-COPY --chown=user:user ./architecture/extensions/nnunetv2/ /opt/algorithm/nnunet/nnunetv2/
+COPY --chown=user:user challenge/architecture/extensions/nnunetv2/ /opt/algorithm/nnunet/nnunetv2/
 
 # Copy model checkpoint to docker (uncomment if you put the model weights directly in this repo)
-COPY --chown=user:user ./architecture/nnUNet_results/ /opt/ml/model/
+COPY --chown=user:user challenge/architecture/nnUNet_results/ /opt/ml/model/
 
 # Copy container testing data to docker (uncomment if you want to see if the model works and put a test image and spacing in this repo)
-COPY --chown=user:user ./architecture/input/ /input/
+COPY --chown=user:user challenge/architecture/input/ /input/
 
 # Set environment variable defaults
 ENV nnUNet_raw="/opt/algorithm/nnunet/nnUNet_raw" \

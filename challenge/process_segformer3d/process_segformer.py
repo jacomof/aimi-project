@@ -46,6 +46,7 @@ class Predictor:
             output = self.model(input)
             # Apply sigmoid to get probabilities
             output = torch.sigmoid(output)
+            output = output > 0.5  # Binarize the output
             # Get the predicted class (argmax)
             prediction = output[0, 1, ...].cpu().numpy()  # Take the second channel
             prediction = prediction.astype(np.int8)  # Cast predictions to integers
@@ -126,7 +127,7 @@ class Uls23(SegmentationAlgorithm):
 
             self.original_orientation = sitk.DICOMOrientImageFilter.GetOrientationFromDirectionCosines(self.image_metadata.GetDirection())
 
-            self.image_metadata = sitk.DICOMOrient(self.image_metadata, 'RAS')  # Ensure RAS orientation
+            #self.image_metadata = sitk.DICOMOrient(self.image_metadata, 'RAS')  # Ensure RAS orientation
 
             # Now get the image data
             image_data = sitk.GetArrayFromImage(self.image_metadata)
@@ -192,6 +193,10 @@ class Uls23(SegmentationAlgorithm):
             print(f'\nPredicting image of shape: {voi.shape}, spacing: {voi_spacing}')
             predictions.append(self.predictor.predict_single_npy_array(voi, {'spacing': voi_spacing}, None, None, False))
 
+            print(f"Unique values in prediction: {np.unique(predictions[-1])}")
+            print(f"Prediction shape: {predictions[-1].shape}")
+            print(f"Prediction dtype: {predictions[-1].dtype}")
+
         end_inference_time = time.time()
         print(f"Total inference runtime: {end_inference_time - start_inference_time}s")
         return predictions
@@ -205,12 +210,17 @@ class Uls23(SegmentationAlgorithm):
 
         for i, segmentation in enumerate(predictions):
             print(f"Post-processing prediction {i}")
+            dif_values = np.unique(segmentation)
+            print(f"Unique values in segmentation: {dif_values}")
             instance_mask, num_features = ndimage.label(segmentation)
             if num_features > 1:
                 print("Found multiple lesion predictions")
                 segmentation[instance_mask != instance_mask[
                     int(self.z_size_model / 2), int(self.xy_size_model / 2), int(self.xy_size_model / 2)]] = 0
                 segmentation[segmentation != 0] = 1
+
+            dif_values = np.unique(segmentation)
+            print(f"Unique values after finding center connected component: {dif_values}")
 
             # Pad segmentations to fit with original image size
             segmentation_pad = np.pad(segmentation, 
