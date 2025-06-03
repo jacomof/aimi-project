@@ -48,6 +48,7 @@ class Predictor:
             output = torch.sigmoid(output)
             # Get the predicted class (argmax)
             prediction = output[0, 1, ...].cpu().numpy()  # Take the second channel
+            prediction = prediction.astype(np.int8)  # Cast predictions to integers
 
             return prediction
 
