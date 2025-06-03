@@ -1,0 +1,29 @@
+Post-processing prediction 0
+Unique values in segmentation: [0 1]
+Number of foreground voxels: 135451
+Number of background voxels: 913125
+Post-processing prediction 1
+Unique values in segmentation: [0 1]
+Number of foreground voxels: 7876
+Number of background voxels: 1040700
+Unique values in instance mask: [0 1]
+Number of features found: 1
+Unique values after finding center connected component: [0 1]
+Post-processing prediction 2
+Unique values in segmentation: [0 1]
+Number of foreground voxels: 13042
+Number of background voxels: 1035534
+Unique values in instance mask: [0 1]
+Number of features found: 1
+Unique values after finding center connected component: [0 1]
+Post-processing prediction 3
+Unique values in segmentation: [0 1]
+Number of foreground voxels: 627
+Number of background voxels: 1047949
+Unique values in instance mask: [0 1]
+Number of features found: 1
+Unique values after finding center connected component: [0 1]
+Output dir contents: ['stacked_voi_sample.mha']
+Output batched image shape: (512, 256, 256)
+Postprocessing & saving runtime: 1.568305253982544s
+Total job runtime: 14.76203465461731s

@@ -27,6 +27,8 @@ class Predictor:
     def normalize(self, x:np.ndarray)->np.ndarray:
         # Transform features by scaling each feature to a given range.
         scaler = MinMaxScaler(feature_range=(0, 1))
+        print(f"Max value in input: {np.max(x)}")
+        
         # (H, W, D) -> (H * W, D)
         normalized_1D_array = scaler.fit_transform(x.reshape(-1, x.shape[-1]))
         normalized_data = normalized_1D_array.reshape(x.shape)
@@ -126,7 +128,7 @@ class Uls23(SegmentationAlgorithm):
             self.image_metadata = sitk.ReadImage(input_dir / input_file)
 
             self.original_orientation = sitk.DICOMOrientImageFilter.GetOrientationFromDirectionCosines(self.image_metadata.GetDirection())
-
+            print(f"Original orientation: {self.original_orientation}")
             #self.image_metadata = sitk.DICOMOrient(self.image_metadata, 'RAS')  # Ensure RAS orientation
 
             # Now get the image data
@@ -212,15 +214,27 @@ class Uls23(SegmentationAlgorithm):
             print(f"Post-processing prediction {i}")
             dif_values = np.unique(segmentation)
             print(f"Unique values in segmentation: {dif_values}")
-            # instance_mask, num_features = ndimage.label(segmentation)
-            # if num_features > 1:
-            #     print("Found multiple lesion predictions")
-            #     segmentation[instance_mask != instance_mask[
-            #         int(self.z_size_model / 2), int(self.xy_size_model / 2), int(self.xy_size_model / 2)]] = 0
-            #     segmentation[segmentation != 0] = 1
+            # Find the largest connected component in the segmentation
+            instance_mask, num_features = ndimage.label(segmentation)
+            print(f"Number of foreground voxels: {np.sum(segmentation)}")
+            print(f"Number of background voxels: {np.sum(segmentation == 0)}")
+            print(f"Unique values in instance mask: {np.unique(instance_mask)}")
+            print(f"Number of features found: {num_features}")
+            if num_features > 1:
+                print("Found multiple lesion predictions")
+                # Find the largest component by voxel count
+                component_sizes = np.bincount(instance_mask.ravel())
+                # Ignore background (component 0)
+                print(f"Component sizes: {component_sizes}")
+                component_sizes[0] = 0
+                largest_component = component_sizes.argmax()
+                print(f"Largest component index: {largest_component}, size: {component_sizes[largest_component]}")
+                # Keep only the largest component
+                segmentation[instance_mask != largest_component] = 0
+                segmentation[segmentation != 0] = 1
 
-            # dif_values = np.unique(segmentation)
-            # print(f"Unique values after finding center connected component: {dif_values}")
+            dif_values = np.unique(segmentation)
+            print(f"Unique values after finding largest connected component: {dif_values}")
 
             # Pad segmentations to fit with original image size
             segmentation_pad = np.pad(segmentation, 
@@ -256,7 +270,7 @@ class Uls23(SegmentationAlgorithm):
         mask = sitk.GetImageFromArray(predictions)
         mask.CopyInformation(self.image_metadata)
         # We reset the orientation that we changed earlier
-        mask = sitk.DICOMOrient(mask, self.original_orientation)
+        #mask = sitk.DICOMOrient(mask, self.original_orientation)
         
         sitk.WriteImage(mask, f"/output/images/ct-binary-uls/{self.id.name}")
         print("Output dir contents:", os.listdir("/output/images/ct-binary-uls/"))

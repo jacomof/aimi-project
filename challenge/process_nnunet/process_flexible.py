@@ -168,11 +168,16 @@ class Uls23(SegmentationAlgorithm):
             dif_values = np.unique(segmentation)
             print(f"Unique values in segmentation: {dif_values}")
             instance_mask, num_features = ndimage.label(segmentation)
+            print(f"Number of foreground voxels: {np.sum(segmentation)}")
+            print(f"Number of background voxels: {np.sum(segmentation == 0)}")
+            print(f"Unique values in instance mask: {np.unique(instance_mask)}")
+            print(f"Number of features found: {num_features}")
             if num_features > 1:
                 print("Found multiple lesion predictions")
                 segmentation[instance_mask != instance_mask[
                     int(self.z_size_model / 2), int(self.xy_size_model / 2), int(self.xy_size_model / 2)]] = 0
                 segmentation[segmentation != 0] = 1
+                print(f"Number of foreground voxels after removing other lesions: {np.sum(segmentation)}")
 
             dif_values = np.unique(segmentation)
             print(f"Unique values after finding center connected component: {dif_values}")
