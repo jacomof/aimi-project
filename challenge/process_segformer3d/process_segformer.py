@@ -212,15 +212,15 @@ class Uls23(SegmentationAlgorithm):
             print(f"Post-processing prediction {i}")
             dif_values = np.unique(segmentation)
             print(f"Unique values in segmentation: {dif_values}")
-            instance_mask, num_features = ndimage.label(segmentation)
-            if num_features > 1:
-                print("Found multiple lesion predictions")
-                segmentation[instance_mask != instance_mask[
-                    int(self.z_size_model / 2), int(self.xy_size_model / 2), int(self.xy_size_model / 2)]] = 0
-                segmentation[segmentation != 0] = 1
+            # instance_mask, num_features = ndimage.label(segmentation)
+            # if num_features > 1:
+            #     print("Found multiple lesion predictions")
+            #     segmentation[instance_mask != instance_mask[
+            #         int(self.z_size_model / 2), int(self.xy_size_model / 2), int(self.xy_size_model / 2)]] = 0
+            #     segmentation[segmentation != 0] = 1
 
-            dif_values = np.unique(segmentation)
-            print(f"Unique values after finding center connected component: {dif_values}")
+            # dif_values = np.unique(segmentation)
+            # print(f"Unique values after finding center connected component: {dif_values}")
 
             # Pad segmentations to fit with original image size
             segmentation_pad = np.pad(segmentation, 
