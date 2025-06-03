@@ -53,10 +53,10 @@ COPY --chown=user:user challenge/process_segformer3d/segformer3d.py /opt/app/
 ### ALGORITHM
 
 # Copy model checkpoint to docker (uncomment if you put the model weights directly in this repo)
-COPY --chown=user:user challenge/all_data_checkpoint_segformer /opt/ml/model/all_data_checkpoint_segformer
+# COPY --chown=user:user challenge/all_data_checkpoint_segformer /opt/ml/model/all_data_checkpoint_segformer
 
 # Copy container testing data to docker (uncomment if you want to see if the model works and put a test image and spacing in this repo)
-COPY --chown=user:user challenge/architecture/input/ /input/
+# COPY --chown=user:user challenge/architecture/input/ /input/
 
 
 ENTRYPOINT [ "python3.10", "-m", "process_segformer", "--model_dir", \ 
